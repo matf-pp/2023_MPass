@@ -30,12 +30,28 @@ func (v *FileVault) Load() {
 }
 
 func (v *FileVault) Store() {
+	jsonBytes, err := json.Marshal(v.entries)
+	if err != nil {
+		panic(err)
+	 }
+
+	 //encrypt jsonBytes
+ 
+	 err = os.WriteFile(v.FilePath, jsonBytes, 0644)
+	 if err != nil {
+		panic(err)
+	 }
+
 }
 
-func (v *FileVault) AddEntry() {
+func (v *FileVault) AddEntry(url string, username string, password string) {
+	siteEntries,_ := v.entries[url]
+	siteEntries[username] = password
 }
 
-func (v *FileVault) DeleteEntry() {
+func (v *FileVault) DeleteEntry(url string, username string) {
+	siteEntries,_ := v.entries[url]
+	delete(siteEntries, username)
 }
 
 func (v *FileVault) GetEntry(url string, username string) *VaultEntry {
@@ -51,8 +67,39 @@ func (v *FileVault) GetEntry(url string, username string) *VaultEntry {
 }
 
 func (v *FileVault) GetEntries(url string) []VaultEntry{
-    return nil
+	siteEntries, exists := v.entries[url]
+	if !exists {
+		return nil
+	}
+
+	var entryArray []VaultEntry
+	for username, password := range siteEntries {
+        entryArray = append(entryArray, *(CreateVaultEntry(url, username, password)))
+    }
+	return entryArray
 }
 
-func (v *FileVault) UpdateEntry() {
+func (v *FileVault) UpdateEntryUsername(url string, oldUsername string, newUsername string) {
+	siteEntries,exists := v.entries[url]
+	if !exists {
+		return 
+	}
+	password, exists := siteEntries[oldUsername]
+	if !exists {
+		return 
+	}
+	siteEntries[newUsername] = password
+	delete(siteEntries, oldUsername)
+}
+
+func (v *FileVault) UpdateEntryPassword(url string, username string, newPassword string) {
+	siteEntries,exists := v.entries[url]
+	if !exists {
+		return 
+	}
+	_, exists = siteEntries[username]
+	if !exists {
+		return 
+	}
+	siteEntries[username] = newPassword
 }

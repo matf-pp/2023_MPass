@@ -3,9 +3,10 @@ package core
 type Vault interface {
     Load()
     Store()
-    AddEntry()
-    DeleteEntry() 
+    AddEntry(url string, username string, password string)
+    DeleteEntry(url string, username string) 
     GetEntries(url string) []VaultEntry
     GetEntry(url string, username string) *VaultEntry
-    UpdateEntry()
+    UpdateEntryUsername(url string, oldUsername string, newUsername string) 
+    UpdateEntryPassword(url string, username string, newPassword string)
 }
