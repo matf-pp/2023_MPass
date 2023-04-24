@@ -10,11 +10,11 @@ import (
 	"math/big"
 )
 
-func init() {
-	assertAvailablePRNG()
+func Init() {
+	AssertAvailablePRNG()
 }
 
-func assertAvailablePRNG() {
+func AssertAvailablePRNG() {
 	// Assert that a cryptographically secure PRNG is available.
 	// Panic otherwise.
 	buf := make([]byte, 1)
