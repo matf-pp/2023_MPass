@@ -34,24 +34,17 @@ func (v *FileVault) Create() {
 		log.Fatalf("password err")
 	}
 	v.VaultKey = string(passwd)
-	data := `{
-		"google.com" : {
-			"ana" : "anaana123",
-			"ana@gmail.com" : "lospas"
-		},
-		"facebook.com" : {
-			"ruzica" : "wewe"
-		}
-	}`
+	data := `{ }`
 	// data := ":"
 	// _ = ioutil.WriteFile(v.FilePath, []byte(data), 0644)
 	ciphertext := encryption.Encrypt(v.VaultKey, data)
 	fmt.Println(ciphertext)
 	encryption.StoreEncryptedData(v.FilePath, ciphertext)
 	authKey, _ := encryption.CreateAuthKey(v.VaultKey, ciphertext)
-	encryption.StoreAuthKey("key1.txt", authKey)
+	encryption.StoreAuthKey("key.txt", authKey)
 
 }
+
 func (v *FileVault) Load() {
 	// file, err := os.Open(v.FilePath) //TODO open or create
 	// if err != nil {
@@ -192,6 +185,7 @@ func (v *FileVault) PrintVault() {
 	fmt.Println("+++++++++++++++++++++++++++++++++++++++++++++++++")
 }
 
-func (v *FileVault) UpdateVaultKey() {
-
+func (v *FileVault) UpdateVaultKey(newPassphrase string) {
+	v.VaultKey = newPassphrase
+	v.Store()
 }

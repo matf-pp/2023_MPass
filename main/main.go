@@ -83,14 +83,21 @@ func check(e error) {
 
 func loadVault() *core.FileVault {
 	v := &core.FileVault{
-		FilePath: "encoded.json",
-		VaultKey: "newPassphrase",
+		// FilePath: "encoded.json",
+		// VaultKey: "newPassphrase1",
+		FilePath: "db.json",
+		VaultKey: "key1",
 	}
 	v.Load()
 	return v
 }
 
 func main() {
+	// var vv core.FileVault
+	// vv.FilePath = "db.json"
+	// vv.VaultKey = "key1"
+	// vv.Create()
+
 	parser := argparse.NewParser("MPass", "password manager program")
 	//commands
 	generateCmd := parser.NewCommand("generate", "generates new password")
@@ -112,9 +119,14 @@ func main() {
 	copyUrlOption := copyCmd.String("u", "url", &argparse.Options{Required: true, Help: "url of entry we wish to copy"})
 	copyUsernameOption := copyCmd.String("n", "username", &argparse.Options{Required: true, Help: "username of entry we wish to copy"})
 
-	changeCmd := parser.NewCommand("change", "changes password entry or masterpass")
+	//add entry --url --username --password
+	addCmd := parser.NewCommand("add", "adds new entry to vault")
+	addUrlOption := addCmd.String("u", "url", &argparse.Options{Required: true, Help: "adds url to entry.."})
+	addUsernameOption := addCmd.String("n", "username", &argparse.Options{Required: true, Help: "username we want to add for the new entry"})
+	addPasswordOption := addCmd.String("p", "password", &argparse.Options{Required: true, Help: "password we want to add to new entry"})
 
 	//change --masterpass
+	changeCmd := parser.NewCommand("change", "changes password entry or masterpass")
 	changeMasterPassCmd := changeCmd.NewCommand("masterpass", "changes masterpass")
 	newMasterPassOption := changeMasterPassCmd.String("n", "newPass", &argparse.Options{Required: true, Help: "takes in new masterpass"})
 
@@ -164,7 +176,7 @@ func main() {
 		//copies to clipboard
 	} else if changeMasterPassCmd.Happened() {
 		fmt.Println(*newMasterPassOption)
-		v.UpdateVaultKey() //TODO
+		v.UpdateVaultKey(*newMasterPassOption) //eg: newPassphrase1
 	} else if changeUsernameCmd.Happened() {
 		fmt.Println(*changeUsernameUrlOption)
 		fmt.Println(*changeUsernameUsernameOption)
@@ -181,6 +193,12 @@ func main() {
 		fmt.Println(*deleteUrlOption)
 		fmt.Println(*deleteUsernameOption)
 		v.DeleteEntry(*deleteUrlOption, *deleteUsernameOption)
+		v.Store()
+	} else if addCmd.Happened() {
+		fmt.Println(*addUrlOption)
+		fmt.Println(*addUsernameOption)
+		// fmt.Println(*addUrlOption)
+		v.AddEntry(*addUrlOption, *addUsernameOption, *addPasswordOption)
 		v.Store()
 	}
 	// var v core.FileVault
