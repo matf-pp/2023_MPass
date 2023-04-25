@@ -4,7 +4,15 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"os"
+	"fmt"
+	"2023_MPass/encryption"
 )
+
+func check(e error) {
+    if e != nil {
+        panic(e)
+    }
+}
 
 type FileVault struct {
 	FilePath, VaultKey string
@@ -13,39 +21,45 @@ type FileVault struct {
 
 func (v *FileVault) Load() {
 	file, err := os.Open(v.FilePath) //TODO open or create
-	if err != nil {
-	   panic(err)
-	}
+	check(err)
 
-	//TODO decrypt
+	encryptedBytes, err := ioutil.ReadAll(file)
+	// fmt.Println(encryptedBytes)
+	check(err)
+	encryptedString := string(encryptedBytes)
+	// fmt.Println(encryptedString)
+	decryptedString := encryption.Decrypt(v.VaultKey, encryptedString)
+	// fmt.Println(decryptedString)
+	decryptedBytes := []byte(decryptedString)
+	// fmt.Println(decryptedBytes)
 
-	jsonBytes, err := ioutil.ReadAll(file)
-	if err != nil {
-	   panic(err)
-	}
-
-	if err := json.Unmarshal(jsonBytes, &(v.entries)); err != nil {
+	if err := json.Unmarshal(decryptedBytes, &(v.entries)); err != nil {
 		panic(err)
 	}
 }
 
 func (v *FileVault) Store() {
 	jsonBytes, err := json.Marshal(v.entries)
-	if err != nil {
-		panic(err)
-	 }
+	check(err)
 
-	 //encrypt jsonBytes
- 
-	 err = os.WriteFile(v.FilePath, jsonBytes, 0644)
-	 if err != nil {
-		panic(err)
-	 }
+	// fmt.Println(string(jsonBytes))
+	jsonBytesString := string(jsonBytes)
+	vaultCiphered := encryption.Encrypt(v.VaultKey, jsonBytesString)
+	// fmt.Println(vaultCiphered
+	
+	f, err := os.Create(v.FilePath)
+	check(err)
+	_, err = f.WriteString(vaultCiphered)
+	check(err)
 
 }
 
 func (v *FileVault) AddEntry(url string, username string, password string) {
-	siteEntries,_ := v.entries[url]
+	siteEntries, exists := v.entries[url]
+	if !exists {
+		v.entries[url] = make(map[string]string)
+		siteEntries,_ = v.entries[url]
+	}
 	siteEntries[username] = password
 }
 
@@ -102,4 +116,18 @@ func (v *FileVault) UpdateEntryPassword(url string, username string, newPassword
 		return 
 	}
 	siteEntries[username] = newPassword
+}
+
+func (v *FileVault) PrintVault() {
+	fmt.Println("+++++++++++++++++++++++++++++++++++++++++++++++++")
+    for url, usernameMap := range v.entries {
+		for username, _ := range usernameMap {
+			fmt.Println(url, " : ", username)
+		}
+    }
+	fmt.Println("+++++++++++++++++++++++++++++++++++++++++++++++++")
+}
+
+func (v *FileVault) UpdateVaultKey(){
+
 }

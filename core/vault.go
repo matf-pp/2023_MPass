@@ -9,4 +9,6 @@ type Vault interface {
     GetEntry(url string, username string) *VaultEntry
     UpdateEntryUsername(url string, oldUsername string, newUsername string) 
     UpdateEntryPassword(url string, username string, newPassword string)
+    UpdateVaultKey()
+    PrintVault()
 }
