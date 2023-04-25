@@ -74,13 +74,13 @@ func RetreiveAuthKey(pathname string) []byte {
 func StoreEncryptedData(pathname, encryptedData string) {
 	err := ioutil.WriteFile(pathname, []byte(encryptedData), 0777)
 	if err != nil {
-		log.Fatalf("....")
+		log.Fatalf("can't store data...")
 	}
 }
 func RetreiveEncryptedData(pathname string) string {
 	data, err := ioutil.ReadFile(pathname)
 	if err != nil {
-		log.Fatalf("....")
+		log.Fatalf("can't retreive data...")
 	}
 	return string(data)
 }
