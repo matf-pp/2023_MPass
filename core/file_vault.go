@@ -187,5 +187,4 @@ func (v *FileVault) PrintVault() {
 
 func (v *FileVault) UpdateVaultKey(newPassphrase string) {
 	v.VaultKey = newPassphrase
-	v.Store()
 }

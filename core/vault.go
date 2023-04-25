@@ -12,4 +12,6 @@ type Vault interface {
 	UpdateEntryPassword(url string, username string, newPassword string)
 	UpdateVaultKey()
 	PrintVault()
+	LockVault() bool 
+	UnlockVault(passPhrase string) bool 
 }
