@@ -5,6 +5,7 @@ import (
 	"bufio"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"os"
 	"strings"
@@ -12,49 +13,98 @@ import (
 	"github.com/howeyc/gopass"
 )
 
+// TODO: function(s) for deleting databases and their respective map entries. lmao
+// * also refactoring and error handling
+
 type FileVault struct {
 	FilePath, VaultKey string
 	entries            map[string]map[string]string
 }
 
+func openDb() (map[string]string, int) {
+	database := make(map[string]string)
+	file, err := os.Open(".databases") //TODO: don't leave this hardcoded either. idc about it now
+	if err != nil {
+		log.Fatal(err)
+	}
+	scanner := bufio.NewScanner(file)
+	i := 0
+	for scanner.Scan() {
+		entry := strings.Split(scanner.Text(), ":")
+		database[entry[0]] = entry[1]
+		i++
+	}
+	//fmt.Println(database)
+	if err := scanner.Err(); err != nil {
+		log.Fatal(err)
+	}
+	return database, i
+
+}
+
+func FindKey(pathfile string) (string, string) {
+	db, _ := openDb()
+	db1, _ := db[pathfile]
+	return db1, db[pathfile]
+}
+func GenerateAndStoreKeyFile(pathfile string) string {
+	db, i := openDb()
+	db[pathfile] = "key" + fmt.Sprint(i) + ".txt"
+	stringline := ""
+	for key, val := range db {
+		tmpString := key + ":" + val + "\n"
+		stringline += tmpString
+	}
+	err := ioutil.WriteFile(".databases", []byte(stringline), 0664)
+	if err != nil {
+		log.Fatalf("error writing to .databases...")
+	}
+	return "key" + fmt.Sprint(i) + ".txt"
+
+}
+
 func (v *FileVault) Create() {
-	fmt.Println("Enter the path where you want your vault to be stored:")
+	fmt.Println("Name your new database:")
 	reader := bufio.NewReader(os.Stdin)
 	filepath, err := reader.ReadString('\n')
 	if err != nil {
-		log.Fatalf("failed string read")
+		log.Fatalf("Failed reading string from input")
 	}
 	filepath = strings.TrimSuffix(filepath, "\n")
 
 	v.FilePath = filepath
-	// data := ""
 	fmt.Println("Enter new master password: ")
 	passwd, err := gopass.GetPasswd()
 	if err != nil {
-		log.Fatalf("password err")
+		log.Fatalf("master password error:", err.Error())
 	}
 	v.VaultKey = string(passwd)
 	data := `{ }`
-	// data := ":"
-	// _ = ioutil.WriteFile(v.FilePath, []byte(data), 0644)
 	ciphertext := encryption.Encrypt(v.VaultKey, data)
-	fmt.Println(ciphertext)
 	encryption.StoreEncryptedData(v.FilePath, ciphertext)
+
 	authKey, _ := encryption.CreateAuthKey(v.VaultKey, ciphertext)
-	encryption.StoreAuthKey("key.txt", authKey)
+
+	key := GenerateAndStoreKeyFile(v.FilePath)
+	encryption.StoreAuthKey(key, authKey)
 
 }
 
 func (v *FileVault) Load() {
-	// file, err := os.Open(v.FilePath) //TODO open or create
-	// if err != nil {
-	//    panic(err)
-	// }
+	key, _ := FindKey(v.FilePath)
 	file := encryption.RetreiveEncryptedData(v.FilePath)
+	if file == "-y" {
+		v.Create()
+		os.Exit(0)
+	} else if file == "-n" {
+		os.Exit(0)
+	}
 	// fmt.Println(v.VaultKey)
 	//* should this stay here? -> no :)
-	authKey := encryption.RetreiveAuthKey("key.txt") //TODO: fix hardcoded path for keys
+	authKey := encryption.RetreiveAuthKey(key)
 	//* decrypt and truncate
+	//* no need for truncate, idk why i thought i needed that
+	//* left as comment in case its needed for some reason
 	if encryption.ValidatePassword(v.VaultKey, file, authKey) {
 		jsonBytes := encryption.Decrypt(v.VaultKey, file)
 		if err := json.Unmarshal([]byte(jsonBytes), &(v.entries)); err != nil {
@@ -69,26 +119,8 @@ func (v *FileVault) Load() {
 
 	} else {
 		fmt.Println("Wrong password!")
+		os.Exit(0) //quits program if wrong password was entered
 	}
-	// jsonBytes, err := ioutil.ReadAll(file)
-	// if err != nil {
-	//    panic(err)
-	// }
-	// file, err := os.Open(v.FilePath) //TODO open or create
-	// if err != nil {
-	// 	panic(err)
-	// }
-
-	// //TODO decrypt
-
-	// jsonBytes, err := ioutil.ReadAll(file)
-	// if err != nil {
-	// 	panic(err)
-	// }
-
-	// if err := json.Unmarshal(jsonBytes, &(v.entries)); err != nil {
-	// 	panic(err)
-	// }
 }
 
 func (v *FileVault) Store() {
@@ -98,16 +130,11 @@ func (v *FileVault) Store() {
 	}
 
 	//encrypt jsonBytes & save authentication key
-
+	key, _ := FindKey(v.FilePath)
 	ciphertext := encryption.Encrypt(v.VaultKey, string(jsonBytes))
 	encryption.StoreEncryptedData(v.FilePath, ciphertext)
 	authKey, _ := encryption.CreateAuthKey(v.VaultKey, ciphertext)
-	encryption.StoreAuthKey("key.txt", authKey)
-
-	// err = os.WriteFile(v.FilePath, jsonBytes, 0644)
-	// if err != nil {
-	// 	panic(err)
-	// }
+	encryption.StoreAuthKey(key, authKey)
 
 }
 
@@ -176,6 +203,7 @@ func (v *FileVault) UpdateEntryPassword(url string, username string, newPassword
 }
 
 func (v *FileVault) PrintVault() {
+	fmt.Println("\t\tDATABASE: " + v.FilePath)
 	fmt.Println("+++++++++++++++++++++++++++++++++++++++++++++++++")
 	for url, usernameMap := range v.entries {
 		for username, _ := range usernameMap {

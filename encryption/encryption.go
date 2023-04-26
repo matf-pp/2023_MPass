@@ -5,13 +5,16 @@ package encryption
 // ...probably a lot more than that but w/e...
 
 import (
+	"bufio"
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/rand"
 	"crypto/sha256"
 	"encoding/hex"
+	"fmt"
 	"io/ioutil"
 	"log"
+	"os"
 	"strings"
 
 	"golang.org/x/crypto/pbkdf2"
@@ -78,9 +81,30 @@ func StoreEncryptedData(pathname, encryptedData string) {
 	}
 }
 func RetreiveEncryptedData(pathname string) string {
+	// pathname = pathname
+	// fmt.Println(pathname)
+	_, err := os.Stat(pathname)
+	if os.IsNotExist(err) {
+		fmt.Println("File not found. Try again or create a new database? -y -n")
+		reader := bufio.NewReader(os.Stdin)
+		readString, error := reader.ReadString('\n')
+		if error != nil {
+			log.Fatalf("Error while reading input -y -n")
+		}
+		readString = strings.TrimSuffix(readString, "\n")
+		if readString == "-y" {
+			// var v core.FileVault
+			// v.Create()
+			return "-y"
+		} else if readString == "-n" {
+			return "-n"
+		} else {
+			log.Fatalf("Invalid input..")
+		}
+	}
 	data, err := ioutil.ReadFile(pathname)
 	if err != nil {
-		log.Fatalf("can't retreive data...")
+		log.Fatalf("Can't retreive data..")
 	}
 	return string(data)
 }
@@ -93,31 +117,3 @@ func ValidatePassword(passphrase, cipthertext string, authKey []byte) bool {
 	return false
 
 }
-
-// func main() {
-// 	// passwords, err := ioutil.ReadFile("file.txt")
-// 	// if err != nil {
-// 	// 	log.Fatalf("file...: %v", err.Error())
-// 	// }
-// 	// key, err := ioutil.ReadFile("key.txt")
-// 	// if err != nil {
-// 	// 	log.Fatalf("file...: %v", err.Error())
-// 	// }
-// 	key := "thisISaKEy!!"
-// 	// c := encrypt(string(key), string(passwords))
-// 	// fmt.Println(decrypt(key, c))
-// 	// storeEncryptedData("file.txt", c)
-// 	// ioutil.WriteFile(hex.EncodeToString())
-// 	c := retreiveEncryptedData("file.txt")
-// 	//* just a test; the only case the authentication key is going to be created is when we create a new database/change the master password
-// 	newAuthenticationKey, _ := createAuthKey(string(key), c)
-// 	storeAuthKey("key.txt", newAuthenticationKey)
-// 	keyFromFile := retreiveAuthKey("key.txt")
-// 	userInputPassword := "somewrongpassword"
-// 	fmt.Println(validatePassword(userInputPassword, c, keyFromFile))
-// 	userInputPassword = string(key)
-// 	fmt.Println(validatePassword(userInputPassword, c, keyFromFile))
-// 	plaintext := decrypt(key, c)
-// 	fmt.Println(plaintext)
-
-// }
