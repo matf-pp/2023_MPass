@@ -7,10 +7,9 @@ import (
 	"fmt"
 	"os"
 	"strings"
-
+	"github.com/atotto/clipboard"
 	"github.com/akamensky/argparse"
 	"github.com/howeyc/gopass"
-	"golang.design/x/clipboard"
 )
 
 func check(e error) {
@@ -95,14 +94,11 @@ func main() {
 		return
 	}
 
-	err = clipboard.Init()
-	check(err)
 	//TODO substitute prints with actual pass manager stuff duh
 	if generateCmd.Happened() {
 		randomString, err := encryption.GenerateRandomString(*lenOption)
 		check(err)
-		clipboard.Write(clipboard.FmtText, []byte(randomString))
-		clipboard.Read(clipboard.FmtText)
+		clipboard.WriteAll(randomString)
 	} else {
 		v := loadVault()
 		if listCmd.Happened() {
@@ -110,9 +106,7 @@ func main() {
 		} else if copyCmd.Happened() {
 			entry := v.GetEntry(*copyUrlOption, *copyUsernameOption)
 			password := entry.GetPassword()
-			check(err)
-			clipboard.Write(clipboard.FmtText, []byte(password))
-			clipboard.Read(clipboard.FmtText)
+			clipboard.WriteAll(password)
 		} else if changeMasterPassCmd.Happened() {
 			v.UpdateVaultKey(*newMasterPassOption) //eg: newPassphrase1
 		} else if changeUsernameCmd.Happened() {
