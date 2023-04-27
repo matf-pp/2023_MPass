@@ -53,29 +53,21 @@ func main() {
 	generateCmd := parser.NewCommand("generate", "generates new password")
 	lenOption := generateCmd.Int("l", "length", &argparse.Options{Required: true, Help: "length of an argument"})
 
-	//save --password s --url u --username n
-	saveCmd := parser.NewCommand("save", "saves password")
-	passOption := saveCmd.String("p", "password", &argparse.Options{Required: true, Help: "password"})
-	urlOption := saveCmd.String("u", "url", &argparse.Options{Required: false, Help: "website url"})
-	usernameOption := saveCmd.String("n", "username", &argparse.Options{Required: false, Help: "username"})
-
 	//list
-	//list -i x
-	//TODO split this into two subcommands
 	listCmd := parser.NewCommand("list", "lists vault")
 
-	//copy -i x
+	//copy --url --username 
 	copyCmd := parser.NewCommand("copy", "copies item i from vault to clipboard")
 	copyUrlOption := copyCmd.String("u", "url", &argparse.Options{Required: true, Help: "url of entry we wish to copy"})
 	copyUsernameOption := copyCmd.String("n", "username", &argparse.Options{Required: true, Help: "username of entry we wish to copy"})
 
-	//add entry --url --username --password
+	//add --url --username --password 
 	addCmd := parser.NewCommand("add", "adds new entry to vault")
 	addUrlOption := addCmd.String("u", "url", &argparse.Options{Required: true, Help: "adds url to entry.."})
 	addUsernameOption := addCmd.String("n", "username", &argparse.Options{Required: true, Help: "username we want to add for the new entry"})
 	addPasswordOption := addCmd.String("p", "password", &argparse.Options{Required: true, Help: "password we want to add to new entry"})
 
-	//change --masterpass
+	//change --masterpass 
 	changeCmd := parser.NewCommand("change", "changes password entry or masterpass")
 	changeMasterPassCmd := changeCmd.NewCommand("masterpass", "changes masterpass")
 	newMasterPassOption := changeMasterPassCmd.String("n", "newPass", &argparse.Options{Required: true, Help: "takes in new masterpass"})
@@ -105,50 +97,36 @@ func main() {
 
 	err = clipboard.Init()
 	check(err)
-	v := loadVault()
 	//TODO substitute prints with actual pass manager stuff duh
 	if generateCmd.Happened() {
-		fmt.Println(*lenOption)
-		password, err := encryption.GenerateRandomString(*lenOption)
+		randomString, err := encryption.GenerateRandomString(*lenOption)
 		check(err)
-		clipboard.Write(clipboard.FmtText, []byte(password))
-		// fmt.Println(clipboard.Read(clipboard.FmtText))
-	} else if saveCmd.Happened() {
-		fmt.Println(*passOption)
-		fmt.Println(*urlOption)
-		fmt.Println(*usernameOption)
-		v.AddEntry(*urlOption, *usernameOption, *passOption)
-		v.Store()
-	} else if listCmd.Happened() {
-		v.PrintVault()
-	} else if copyCmd.Happened() {
-		fmt.Println(*copyUrlOption, *copyUsernameOption)
-		//copies to clipboard
-	} else if changeMasterPassCmd.Happened() {
-		fmt.Println(*newMasterPassOption)
-		v.UpdateVaultKey(*newMasterPassOption) //eg: newPassphrase1
-	} else if changeUsernameCmd.Happened() {
-		fmt.Println(*changeUsernameUrlOption)
-		fmt.Println(*changeUsernameUsernameOption)
-		fmt.Println(*changeUsernameNewUsernameOption)
-		v.UpdateEntryUsername(*changeUsernameUrlOption, *changeUsernameUsernameOption, *changeUsernameNewUsernameOption)
-		v.Store()
-	} else if changePasswordCmd.Happened() {
-		fmt.Println(*changePasswordUrlOption)
-		fmt.Println(*changePasswordUsernameOption)
-		fmt.Println(*changePasswordNewPasswordOption)
-		v.UpdateEntryPassword(*changePasswordUrlOption, *changePasswordUsernameOption, *changePasswordNewPasswordOption)
-		v.Store()
-	} else if deleteCmd.Happened() {
-		fmt.Println(*deleteUrlOption)
-		fmt.Println(*deleteUsernameOption)
-		v.DeleteEntry(*deleteUrlOption, *deleteUsernameOption)
-		v.Store()
-	} else if addCmd.Happened() {
-		fmt.Println(*addUrlOption)
-		fmt.Println(*addUsernameOption)
-		// fmt.Println(*addUrlOption)
-		v.AddEntry(*addUrlOption, *addUsernameOption, *addPasswordOption)
-		v.Store()
+		clipboard.Write(clipboard.FmtText, []byte(randomString))
+		clipboard.Read(clipboard.FmtText)
+	} else {
+		v := loadVault()
+		if listCmd.Happened() {
+			v.PrintVault()
+		} else if copyCmd.Happened() {
+			entry := v.GetEntry(*copyUrlOption, *copyUsernameOption)
+			password := entry.GetPassword()
+			check(err)
+			clipboard.Write(clipboard.FmtText, []byte(password))
+			clipboard.Read(clipboard.FmtText)
+		} else if changeMasterPassCmd.Happened() {
+			v.UpdateVaultKey(*newMasterPassOption) //eg: newPassphrase1
+		} else if changeUsernameCmd.Happened() {
+			v.UpdateEntryUsername(*changeUsernameUrlOption, *changeUsernameUsernameOption, *changeUsernameNewUsernameOption)
+			v.Store()
+		} else if changePasswordCmd.Happened() {
+			v.UpdateEntryPassword(*changePasswordUrlOption, *changePasswordUsernameOption, *changePasswordNewPasswordOption)
+			v.Store()
+		} else if deleteCmd.Happened() {
+			v.DeleteEntry(*deleteUrlOption, *deleteUsernameOption)
+			v.Store()
+		} else if addCmd.Happened() {
+			v.AddEntry(*addUrlOption, *addUsernameOption, *addPasswordOption)
+			v.Store()
+		}
 	}
 }
