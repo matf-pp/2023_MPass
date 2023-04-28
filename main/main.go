@@ -72,7 +72,7 @@ func main() {
 	//change --masterpass
 	changeCmd := parser.NewCommand("change", "changes password entry or masterpass")
 	changeMasterPassCmd := changeCmd.NewCommand("masterpass", "changes masterpass")
-	newMasterPassOption := changeMasterPassCmd.String("n", "newPass", &argparse.Options{Required: true, Help: "takes in new masterpass"})
+	// newMasterPassOption := changeMasterPassCmd.String("n", "newPass", &argparse.Options{Required: true, Help: "takes in new masterpass"})
 
 	//delete --database
 	deleteDbCmd := parser.NewCommand("deletedb", "deletes an existing database")
@@ -88,7 +88,7 @@ func main() {
 	changePasswordCmd := changeCmd.NewCommand("password", "changes password of entry")
 	changePasswordUrlOption := changePasswordCmd.String("u", "url", &argparse.Options{Required: true, Help: "url of entry we wish to update"})
 	changePasswordUsernameOption := changePasswordCmd.String("n", "username", &argparse.Options{Required: true, Help: "username of entry we wish to update"})
-	changePasswordNewPasswordOption := changePasswordCmd.String("p", "newpassword", &argparse.Options{Required: true, Help: "new password"})
+	// changePasswordNewPasswordOption := changePasswordCmd.String("p", "newpassword", &argparse.Options{Required: true, Help: "new password"})
 
 	//delete --url --username
 	deleteCmd := parser.NewCommand("delete", "deletes entry")
@@ -119,12 +119,18 @@ func main() {
 
 			// fmt.Println(string1)
 		} else if changeMasterPassCmd.Happened() {
-			v.UpdateVaultKey(*newMasterPassOption) //eg: newPassphrase1
+			fmt.Println("Enter new master password: ")
+			passwd, err := gopass.GetPasswd()
+			check(err)
+			v.UpdateVaultKey(string(passwd)) //eg: newPassphrase1
 		} else if changeUsernameCmd.Happened() {
 			v.UpdateEntryUsername(*changeUsernameUrlOption, *changeUsernameUsernameOption, *changeUsernameNewUsernameOption)
 			v.Store()
 		} else if changePasswordCmd.Happened() {
-			v.UpdateEntryPassword(*changePasswordUrlOption, *changePasswordUsernameOption, *changePasswordNewPasswordOption)
+			fmt.Println("Enter new entry password: ")
+			passwd, err := gopass.GetPasswd()
+			check(err)
+			v.UpdateEntryPassword(*changePasswordUrlOption, *changePasswordUsernameOption, string(passwd))
 			v.Store()
 		} else if deleteCmd.Happened() {
 			v.DeleteEntry(*deleteUrlOption, *deleteUsernameOption)
