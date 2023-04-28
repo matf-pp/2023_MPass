@@ -7,8 +7,9 @@ import (
 	"fmt"
 	"os"
 	"strings"
-	"github.com/atotto/clipboard"
+
 	"github.com/akamensky/argparse"
+	"github.com/atotto/clipboard"
 	"github.com/howeyc/gopass"
 )
 
@@ -47,6 +48,8 @@ func main() {
 	// vv.FilePath = "db.json"
 	// vv.VaultKey = "key1"
 	// vv.Create()
+	//* note: in order for clipboard to work users need to install xclip or xsel
+
 	parser := argparse.NewParser("MPass", "password manager program")
 	//commands
 	generateCmd := parser.NewCommand("generate", "generates new password")
@@ -55,21 +58,25 @@ func main() {
 	//list
 	listCmd := parser.NewCommand("list", "lists vault")
 
-	//copy --url --username 
+	//copy --url --username
 	copyCmd := parser.NewCommand("copy", "copies item i from vault to clipboard")
 	copyUrlOption := copyCmd.String("u", "url", &argparse.Options{Required: true, Help: "url of entry we wish to copy"})
 	copyUsernameOption := copyCmd.String("n", "username", &argparse.Options{Required: true, Help: "username of entry we wish to copy"})
 
-	//add --url --username --password 
+	//add --url --username --password
 	addCmd := parser.NewCommand("add", "adds new entry to vault")
 	addUrlOption := addCmd.String("u", "url", &argparse.Options{Required: true, Help: "adds url to entry.."})
 	addUsernameOption := addCmd.String("n", "username", &argparse.Options{Required: true, Help: "username we want to add for the new entry"})
 	addPasswordOption := addCmd.String("p", "password", &argparse.Options{Required: true, Help: "password we want to add to new entry"})
 
-	//change --masterpass 
+	//change --masterpass
 	changeCmd := parser.NewCommand("change", "changes password entry or masterpass")
 	changeMasterPassCmd := changeCmd.NewCommand("masterpass", "changes masterpass")
 	newMasterPassOption := changeMasterPassCmd.String("n", "newPass", &argparse.Options{Required: true, Help: "takes in new masterpass"})
+
+	//delete --database
+	deleteDbCmd := parser.NewCommand("deletedb", "deletes an existing database")
+	deleteDatabaseOption := deleteDbCmd.String("b", "database", &argparse.Options{Required: true, Help: "name of database we want to delete"})
 
 	//change username --url --username --newusername
 	changeUsernameCmd := changeCmd.NewCommand("username", "changes username of entry")
@@ -107,6 +114,10 @@ func main() {
 			entry := v.GetEntry(*copyUrlOption, *copyUsernameOption)
 			password := entry.GetPassword()
 			clipboard.WriteAll(password)
+			// time.Sleep(5)
+			// exec.Command("xsel", "-z")
+
+			// fmt.Println(string1)
 		} else if changeMasterPassCmd.Happened() {
 			v.UpdateVaultKey(*newMasterPassOption) //eg: newPassphrase1
 		} else if changeUsernameCmd.Happened() {
@@ -121,6 +132,8 @@ func main() {
 		} else if addCmd.Happened() {
 			v.AddEntry(*addUrlOption, *addUsernameOption, *addPasswordOption)
 			v.Store()
+		} else if deleteDbCmd.Happened() {
+			v.Delete(*deleteDatabaseOption)
 		}
 	}
 }

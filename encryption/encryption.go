@@ -5,16 +5,14 @@ package encryption
 // ...probably a lot more than that but w/e...
 
 import (
-	"bufio"
+	"bytes"
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/rand"
 	"crypto/sha256"
 	"encoding/hex"
-	"fmt"
 	"io/ioutil"
 	"log"
-	"os"
 	"strings"
 
 	"golang.org/x/crypto/pbkdf2"
@@ -48,6 +46,7 @@ func Decrypt(passphrase, ciphertext string) string {
 	b, _ := aes.NewCipher(key)
 	aesgcm, _ := cipher.NewGCM(b)
 	data, _ = aesgcm.Open(nil, iv, data, nil)
+
 	return string(data)
 }
 
@@ -81,37 +80,27 @@ func StoreEncryptedData(pathname, encryptedData string) {
 	}
 }
 func RetreiveEncryptedData(pathname string) string {
-	// pathname = pathname
-	// fmt.Println(pathname)
-	_, err := os.Stat(pathname)
-	if os.IsNotExist(err) {
-		fmt.Println("File not found. Try again or create a new database? -y -n")
-		reader := bufio.NewReader(os.Stdin)
-		readString, error := reader.ReadString('\n')
-		if error != nil {
-			log.Fatalf("Error while reading input -y -n")
-		}
-		readString = strings.TrimSuffix(readString, "\n")
-		if readString == "-y" {
-			// var v core.FileVault
-			// v.Create()
-			return "-y"
-		} else if readString == "-n" {
-			return "-n"
-		} else {
-			log.Fatalf("Invalid input..")
-		}
-	}
+
 	data, err := ioutil.ReadFile(pathname)
 	if err != nil {
 		log.Fatalf("Can't retreive data..")
 	}
 	return string(data)
 }
-func ValidatePassword(passphrase, cipthertext string, authKey []byte) bool {
+func ValidatePassword(passphrase, cipthertext string, authKey string) bool {
+	//* NIKAD ne proveravati hash sa []byte konverzijom nego hex.Decode string!!!!!
 	key, _ := CreateAuthKey(passphrase, cipthertext)
-	keyHex := hex.EncodeToString(key)
-	if keyHex == (hex.EncodeToString(authKey)) {
+	// fmt.Println(hex.EncodeToString(key))
+	// fmt.Println(hex.EncodeToString(authKey))
+	authKeyByte, err := hex.DecodeString(authKey)
+
+	//* nil byte pri proveri nije smetao al mogu cisto reda radi da ga sklonim da se osiguram
+	authKeyByte = bytes.Trim(authKeyByte, "\x00")
+	key = bytes.Trim(key, "\x00")
+	if err != nil {
+		log.Fatalf(err.Error())
+	}
+	if bytes.Equal(key, authKeyByte) {
 		return true
 	}
 	return false

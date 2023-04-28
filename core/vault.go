@@ -1,12 +1,11 @@
 package core
 
 type Vault interface {
-	openDb() (map[string]string, int)
-	FindKey(pathfile string) (string, string)
-	GenerateAndStoreKeyFile(pathfile string) string
+	DoesFileExist(pathname string) (bool, string)
 	Create()
 	Load()
 	Store()
+	Delete(pathname string)
 	AddEntry(url string, username string, password string)
 	DeleteEntry(url string, username string)
 	GetEntries(url string) []VaultEntry

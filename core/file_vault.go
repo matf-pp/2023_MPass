@@ -1,11 +1,12 @@
 package core
 
 import (
+	"2023_MPass/databases"
 	"2023_MPass/encryption"
 	"bufio"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
 	"strings"
@@ -14,56 +15,69 @@ import (
 )
 
 // TODO: function(s) for deleting databases and their respective map entries. lmao
-// * also refactoring and error handling
+// * also refactoring (slayed) and error handling (did not slay)
 
 type FileVault struct {
 	FilePath, VaultKey string
 	entries            map[string]map[string]string
+	db                 databases.DatabaseInfo
 }
 
-func openDb() (map[string]string, int) {
-	database := make(map[string]string)
-	file, err := os.Open(".databases") //TODO: don't leave this hardcoded either. idc about it now
+// * leave these functions here or move them to another file? package?
+// func openDb() map[string]string {
+// 	database := make(map[string]string)
+// 	file, err := os.Open(".databases") //TODO: don't leave this hardcoded either. idc about it now
+// 	if err != nil {
+// 		log.Fatal(err)
+// 	}
+// 	scanner := bufio.NewScanner(file)
+// 	i := 0
+// 	for scanner.Scan() {
+// 		entry := strings.Split(scanner.Text(), ":")
+// 		database[entry[0]] = entry[1]
+// 		i++
+// 	}
+// 	// fmt.Println(database)
+// 	if err := scanner.Err(); err != nil {
+// 		log.Fatal(err)
+// 	}
+// 	return database
+
+// }
+
+// func FindKey(pathfile string) string {
+// 	db := openDb()
+// 	return db[pathfile]
+// }
+// func UpdateAndStoreKeyHashes(pathname, keyHash string) {
+// 	db := openDb()
+// 	db[pathname] = keyHash
+// 	stringline := ""
+// 	for key, val := range db {
+// 		tmpString := key + ":" + val + "\n"
+// 		stringline += tmpString
+// 	}
+// 	// fmt.Println(stringline)
+// 	err := ioutil.WriteFile(".databases", []byte(stringline), 0664)
+// 	if err != nil {
+// 		log.Fatalf("error writing to .databases...", err.Error())
+// 	}
+// 	// fmt.Println(pathname, hex.EncodeToString([]byte(keyHash)))
+// }
+
+func (v *FileVault) Delete(pathfile string) {
+	v.db.OpenDb()
+	err := os.Remove(v.FilePath)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("failed removing the file..", err.Error())
 	}
-	scanner := bufio.NewScanner(file)
-	i := 0
-	for scanner.Scan() {
-		entry := strings.Split(scanner.Text(), ":")
-		database[entry[0]] = entry[1]
-		i++
-	}
-	//fmt.Println(database)
-	if err := scanner.Err(); err != nil {
-		log.Fatal(err)
-	}
-	return database, i
-
-}
-
-func FindKey(pathfile string) (string, string) {
-	db, _ := openDb()
-	db1, _ := db[pathfile]
-	return db1, db[pathfile]
-}
-func GenerateAndStoreKeyFile(pathfile string) string {
-	db, i := openDb()
-	db[pathfile] = "key" + fmt.Sprint(i) + ".txt"
-	stringline := ""
-	for key, val := range db {
-		tmpString := key + ":" + val + "\n"
-		stringline += tmpString
-	}
-	err := ioutil.WriteFile(".databases", []byte(stringline), 0664)
-	if err != nil {
-		log.Fatalf("error writing to .databases...")
-	}
-	return "key" + fmt.Sprint(i) + ".txt"
+	v.db.DeleteDatabaseEntry(pathfile)
 
 }
 
 func (v *FileVault) Create() {
+	// var db databases.DatabaseInfo
+	v.db.OpenDb()
 	fmt.Println("Name your new database:")
 	reader := bufio.NewReader(os.Stdin)
 	filepath, err := reader.ReadString('\n')
@@ -85,56 +99,77 @@ func (v *FileVault) Create() {
 
 	authKey, _ := encryption.CreateAuthKey(v.VaultKey, ciphertext)
 
-	key := GenerateAndStoreKeyFile(v.FilePath)
-	encryption.StoreAuthKey(key, authKey)
+	v.db.UpdateAndStoreKeyHashes(v.FilePath, hex.EncodeToString(authKey))
+	// StoreKeyHashes()
+	// key := GenerateAndStoreKeyFile(v.FilePath)
+	// encryption.StoreAuthKey(key, authKey)
 
 }
-
-func (v *FileVault) Load() {
-	key, _ := FindKey(v.FilePath)
-	file := encryption.RetreiveEncryptedData(v.FilePath)
-	if file == "-y" {
-		v.Create()
-		os.Exit(0)
-	} else if file == "-n" {
-		os.Exit(0)
+func DoesFileExist(pathname string) (bool, string) {
+	_, err := os.Stat(pathname)
+	if os.IsNotExist(err) {
+		fmt.Println("File not found. Try again or create a new database? -y -n")
+		reader := bufio.NewReader(os.Stdin)
+		readString, error := reader.ReadString('\n')
+		if error != nil {
+			log.Fatalf("Error while reading input -y -n")
+		}
+		readString = strings.TrimSuffix(readString, "\n")
+		if readString == "-y" {
+			// var v core.FileVault
+			// v.Create()
+			return false, "-y"
+		} else if readString == "-n" {
+			return false, "-n"
+		} else {
+			log.Fatalf("Invalid input..")
+		}
 	}
-	// fmt.Println(v.VaultKey)
-	//* should this stay here? -> no :)
-	authKey := encryption.RetreiveAuthKey(key)
-	//* decrypt and truncate
-	//* no need for truncate, idk why i thought i needed that
-	//* left as comment in case its needed for some reason
-	if encryption.ValidatePassword(v.VaultKey, file, authKey) {
-		jsonBytes := encryption.Decrypt(v.VaultKey, file)
+	return true, "..."
+}
+func (v *FileVault) Load() {
+	v.db.OpenDb()
+	authKey := v.db.FindKey(v.FilePath)
+	// fmt.Println(authKey)
+	exists, file := DoesFileExist(v.FilePath)
+	if exists == false {
+		if file == "-y" {
+			v.Create()
+			os.Exit(0)
+		} else if file == "-n" {
+			os.Exit(0)
+		}
+	}
+	ciphertext := encryption.RetreiveEncryptedData(v.FilePath)
+	if encryption.ValidatePassword(v.VaultKey, ciphertext, authKey) {
+		jsonBytes := encryption.Decrypt(v.VaultKey, ciphertext)
 		if err := json.Unmarshal([]byte(jsonBytes), &(v.entries)); err != nil {
 			panic(err)
 		}
-		// if err := os.Truncate(v.FilePath, 0); err != nil {
-		// 	log.Printf("Failed to truncate db: %v", err)
-		// }
-		// if err := os.Truncate("key1.txt", 0); err != nil {
-		// 	log.Printf("Failed to truncate key: %v", err)
-		// }
-
 	} else {
 		fmt.Println("Wrong password!")
-		os.Exit(0) //quits program if wrong password was entered
+		os.Exit(0) //quits program if wrong password has been entered
 	}
 }
 
 func (v *FileVault) Store() {
+	v.db.OpenDb()
 	jsonBytes, err := json.Marshal(v.entries)
 	if err != nil {
 		panic(err)
 	}
 
 	//encrypt jsonBytes & save authentication key
-	key, _ := FindKey(v.FilePath)
+	// key, _ := FindKey(v.FilePath)
+
 	ciphertext := encryption.Encrypt(v.VaultKey, string(jsonBytes))
 	encryption.StoreEncryptedData(v.FilePath, ciphertext)
+
 	authKey, _ := encryption.CreateAuthKey(v.VaultKey, ciphertext)
-	encryption.StoreAuthKey(key, authKey)
+
+	v.db.UpdateAndStoreKeyHashes(v.FilePath, hex.EncodeToString(authKey))
+	// StoreKeyHashes()
+	// encryption.StoreAuthKey(key, authKey)
 
 }
 
