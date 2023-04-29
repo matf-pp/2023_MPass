@@ -45,34 +45,47 @@ type FileVault struct {
 
 // }
 
-// func FindKey(pathfile string) string {
-// 	db := openDb()
-// 	return db[pathfile]
-// }
-// func UpdateAndStoreKeyHashes(pathname, keyHash string) {
-// 	db := openDb()
-// 	db[pathname] = keyHash
-// 	stringline := ""
-// 	for key, val := range db {
-// 		tmpString := key + ":" + val + "\n"
-// 		stringline += tmpString
-// 	}
-// 	// fmt.Println(stringline)
-// 	err := ioutil.WriteFile(".databases", []byte(stringline), 0664)
-// 	if err != nil {
-// 		log.Fatalf("error writing to .databases...", err.Error())
-// 	}
-// 	// fmt.Println(pathname, hex.EncodeToString([]byte(keyHash)))
-// }
-
-func (v *FileVault) Delete(pathfile string) {
-	v.db.OpenDb()
-	err := os.Remove(v.FilePath)
-	if err != nil {
-		log.Fatalf("failed removing the file..", err.Error())
+//	func FindKey(pathfile string) string {
+//		db := openDb()
+//		return db[pathfile]
+//	}
+//
+//	func UpdateAndStoreKeyHashes(pathname, keyHash string) {
+//		db := openDb()
+//		db[pathname] = keyHash
+//		stringline := ""
+//		for key, val := range db {
+//			tmpString := key + ":" + val + "\n"
+//			stringline += tmpString
+//		}
+//		// fmt.Println(stringline)
+//		err := ioutil.WriteFile(".databases", []byte(stringline), 0664)
+//		if err != nil {
+//			log.Fatalf("error writing to .databases...", err.Error())
+//		}
+//		// fmt.Println(pathname, hex.EncodeToString([]byte(keyHash)))
+//	}
+func DoesFileExist(pathname string) (bool, string) {
+	_, err := os.Stat(pathname)
+	if os.IsNotExist(err) {
+		fmt.Println("File not found. Try again or create a new database? -y -n")
+		reader := bufio.NewReader(os.Stdin)
+		readString, error := reader.ReadString('\n')
+		if error != nil {
+			log.Fatalf("Error while reading input -y -n")
+		}
+		readString = strings.TrimSuffix(readString, "\n")
+		if readString == "-y" {
+			// var v core.FileVault
+			// v.Create()
+			return false, "-y"
+		} else if readString == "-n" {
+			return false, "-n"
+		} else {
+			log.Fatalf("Invalid input..")
+		}
 	}
-	v.db.DeleteDatabaseEntry(pathfile)
-
+	return true, "..."
 }
 
 func (v *FileVault) Create() {
@@ -105,28 +118,7 @@ func (v *FileVault) Create() {
 	// encryption.StoreAuthKey(key, authKey)
 
 }
-func DoesFileExist(pathname string) (bool, string) {
-	_, err := os.Stat(pathname)
-	if os.IsNotExist(err) {
-		fmt.Println("File not found. Try again or create a new database? -y -n")
-		reader := bufio.NewReader(os.Stdin)
-		readString, error := reader.ReadString('\n')
-		if error != nil {
-			log.Fatalf("Error while reading input -y -n")
-		}
-		readString = strings.TrimSuffix(readString, "\n")
-		if readString == "-y" {
-			// var v core.FileVault
-			// v.Create()
-			return false, "-y"
-		} else if readString == "-n" {
-			return false, "-n"
-		} else {
-			log.Fatalf("Invalid input..")
-		}
-	}
-	return true, "..."
-}
+
 func (v *FileVault) Load() {
 	v.db.OpenDb()
 	authKey := v.db.FindKey(v.FilePath)
@@ -170,6 +162,16 @@ func (v *FileVault) Store() {
 	v.db.UpdateAndStoreKeyHashes(v.FilePath, hex.EncodeToString(authKey))
 	// StoreKeyHashes()
 	// encryption.StoreAuthKey(key, authKey)
+
+}
+
+func (v *FileVault) Delete(pathfile string) {
+	v.db.OpenDb()
+	err := os.Remove(v.FilePath)
+	if err != nil {
+		log.Fatalf("failed removing the file..", err.Error())
+	}
+	v.db.DeleteDatabaseEntry(pathfile)
 
 }
 

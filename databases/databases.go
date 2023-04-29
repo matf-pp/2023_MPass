@@ -14,9 +14,18 @@ type DatabaseInfo struct {
 
 func (db *DatabaseInfo) OpenDb() {
 	db.info = make(map[string]string)
-	file, err := os.Open(".databases") //TODO: don't leave this hardcoded either. idc about it now
-	if err != nil {
-		log.Fatal(err)
+	var file *os.File
+	_, err := os.Stat(".databases")
+	if os.IsNotExist(err) {
+		file, err = os.Create(".databases")
+		if err != nil {
+			log.Fatalf("failed to create a file (probably)", err.Error())
+		}
+	} else {
+		file, err = os.Open(".databases") //TODO: don't leave this hardcoded either. idc about it now
+		if err != nil {
+			log.Fatalf("failed to open .databases", err.Error())
+		}
 	}
 	scanner := bufio.NewScanner(file)
 	i := 0

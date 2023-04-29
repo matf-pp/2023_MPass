@@ -114,6 +114,7 @@ func main() {
 			entry := v.GetEntry(*copyUrlOption, *copyUsernameOption)
 			password := entry.GetPassword()
 			clipboard.WriteAll(password)
+			//TODO: any way to timeout delete from clipboard?
 			// time.Sleep(5)
 			// exec.Command("xsel", "-z")
 
