@@ -14,9 +14,6 @@ import (
 	"github.com/howeyc/gopass"
 )
 
-// TODO: function(s) for deleting databases and their respective map entries. lmao
-// * also refactoring (slayed) and error handling (did not slay)
-
 type FileVault struct {
 	FilePath, VaultKey string
 	entries            map[string]map[string]string
@@ -30,7 +27,7 @@ func DoesFileExist(pathname string) (bool, string) {
 		reader := bufio.NewReader(os.Stdin)
 		readString, error := reader.ReadString('\n')
 		if error != nil {
-			log.Fatalf("Error while reading input -y -n")
+			log.Fatalln("Error while reading input -y -n")
 		}
 		readString = strings.TrimSuffix(readString, "\n")
 		if readString == "-y" {
@@ -40,7 +37,7 @@ func DoesFileExist(pathname string) (bool, string) {
 		} else if readString == "-n" {
 			return false, "-n"
 		} else {
-			log.Fatalf("Invalid input..")
+			log.Fatalln("Invalid input..")
 		}
 	}
 	return true, "..."
@@ -53,7 +50,7 @@ func (v *FileVault) Create() {
 	reader := bufio.NewReader(os.Stdin)
 	filepath, err := reader.ReadString('\n')
 	if err != nil {
-		log.Fatalf("Failed reading string from input")
+		log.Fatalln("Failed reading string from input")
 	}
 	filepath = strings.TrimSuffix(filepath, "\n")
 
@@ -61,7 +58,7 @@ func (v *FileVault) Create() {
 	fmt.Println("Enter new master password: ")
 	passwd, err := gopass.GetPasswd()
 	if err != nil {
-		log.Fatalf("master password error:", err.Error())
+		log.Fatalln("master password error:", err.Error())
 	}
 	v.VaultKey = string(passwd)
 	data := `{ }`
@@ -127,7 +124,7 @@ func (v *FileVault) Delete(pathfile string) {
 	v.db.OpenDb()
 	err := os.Remove(v.FilePath)
 	if err != nil {
-		log.Fatalf("failed removing the file..", err.Error())
+		log.Fatalln("failed removing the file..", err.Error())
 	}
 	v.db.DeleteDatabaseEntry(pathfile)
 
@@ -201,7 +198,7 @@ func (v *FileVault) PrintVault() {
 	fmt.Println("\t\tDATABASE: " + v.FilePath)
 	fmt.Println("+++++++++++++++++++++++++++++++++++++++++++++++++")
 	for url, usernameMap := range v.entries {
-		for username, _ := range usernameMap {
+		for username := range usernameMap {
 			fmt.Printf("+   %s : %-20s		+\n", url, username)
 		}
 	}

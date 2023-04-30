@@ -36,8 +36,7 @@ func loadDatabase() (string, string) {
 func loadVault() *core.FileVault {
 	filepath, passwd := loadDatabase()
 	v := &core.FileVault{
-		// FilePath: "encoded.json",
-		// VaultKey: "newPassphrase1",
+
 		FilePath: filepath,
 		VaultKey: passwd,
 	}
@@ -46,10 +45,7 @@ func loadVault() *core.FileVault {
 }
 
 func main() {
-	// var vv core.FileVault
-	// vv.FilePath = "db.json"
-	// vv.VaultKey = "key1"
-	// vv.Create()
+
 	//* note: in order for clipboard to work users need to install xclip or xsel
 
 	parser := argparse.NewParser("MPass", "Password manager program")
@@ -103,7 +99,6 @@ func main() {
 		return
 	}
 
-	//TODO substitute prints with actual pass manager stuff duh
 	if generateCmd.Happened() {
 		randomString, err := encryption.GenerateRandomString(*lenOption)
 		check(err)
@@ -123,11 +118,7 @@ func main() {
 			password := entry.GetPassword()
 			clipboard.WriteAll(password)
 			fmt.Println("# Copied to clipboard!")
-			//TODO: any way to timeout delete from clipboard?
-			// time.Sleep(5)
-			// exec.Command("xsel", "-z")
 
-			// fmt.Println(string1)
 		} else if changeMasterPassCmd.Happened() {
 			fmt.Println("Enter new master password: ")
 			passwd, err := gopass.GetPasswdMasked()
@@ -151,7 +142,7 @@ func main() {
 			check(err)
 			v.AddEntry(*addUrlOption, *addUsernameOption, string(password))
 			v.Store()
-			fmt.Println("# Added to database {}!")
+			fmt.Println("# Added to database!")
 		} else if deleteDbCmd.Happened() {
 			if v.FilePath == *deleteDatabaseOption {
 				v.Delete(*deleteDatabaseOption)

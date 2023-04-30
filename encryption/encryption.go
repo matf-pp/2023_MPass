@@ -58,9 +58,10 @@ func CreateAuthKey(passphrase, cipthertext string) ([]byte, []byte) {
 	return DeriveKey(string(key), []byte(passphrase))
 }
 
+// * obsolete
 func StoreAuthKey(pathname string, authKey []byte) {
 	authKeyHex := hex.EncodeToString(authKey)
-	err := ioutil.WriteFile(pathname, []byte(authKeyHex), 0777)
+	err := ioutil.WriteFile(pathname, []byte(authKeyHex), 0644)
 	if err != nil {
 		log.Fatal("key storage error")
 	}
@@ -68,22 +69,23 @@ func StoreAuthKey(pathname string, authKey []byte) {
 func RetreiveAuthKey(pathname string) []byte {
 	authKeyHex, err := ioutil.ReadFile(pathname)
 	if err != nil {
-		log.Fatalf("can't retreive the key..")
+		log.Fatalln("can't retreive the key..")
 	}
 	authKey, _ := hex.DecodeString(string(authKeyHex))
 	return authKey
 }
 func StoreEncryptedData(pathname, encryptedData string) {
-	err := ioutil.WriteFile(pathname, []byte(encryptedData), 0777)
+	err := ioutil.WriteFile(pathname, []byte(encryptedData), 0644)
 	if err != nil {
-		log.Fatalf("can't store data...")
+		log.Fatalln("can't store data...")
 	}
 }
 func RetreiveEncryptedData(pathname string) string {
 
 	data, err := ioutil.ReadFile(pathname)
+
 	if err != nil {
-		log.Fatalf("Can't retreive data..")
+		log.Fatalln("Can't retreive data..")
 	}
 	return string(data)
 }
@@ -98,7 +100,7 @@ func ValidatePassword(passphrase, cipthertext string, authKey string) bool {
 	authKeyByte = bytes.Trim(authKeyByte, "\x00")
 	key = bytes.Trim(key, "\x00")
 	if err != nil {
-		log.Fatalf(err.Error())
+		log.Fatalln(err.Error())
 	}
 	if bytes.Equal(key, authKeyByte) {
 		return true

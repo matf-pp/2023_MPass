@@ -16,15 +16,16 @@ func (db *DatabaseInfo) OpenDb() {
 	db.info = make(map[string]string)
 	var file *os.File
 	_, err := os.Stat(".databases")
+
 	if os.IsNotExist(err) {
 		file, err = os.Create(".databases")
 		if err != nil {
-			log.Fatalf("failed to create a file (probably)", err.Error())
+			log.Fatalln("failed to create a file (probably)", err.Error())
 		}
 	} else {
 		file, err = os.Open(".databases") //TODO: don't leave this hardcoded either. idc about it now
 		if err != nil {
-			log.Fatalf("failed to open .databases", err.Error())
+			log.Fatalln("failed to open .databases", err.Error())
 		}
 	}
 	scanner := bufio.NewScanner(file)
@@ -38,6 +39,7 @@ func (db *DatabaseInfo) OpenDb() {
 	if err := scanner.Err(); err != nil {
 		log.Fatal(err)
 	}
+	defer file.Close()
 }
 
 func (db *DatabaseInfo) FindKey(pathname string) string {
@@ -45,8 +47,6 @@ func (db *DatabaseInfo) FindKey(pathname string) string {
 	return db.info[pathname]
 }
 
-// *separate these two functions...
-// * i literally have duplicate code with 1 line different
 func (db *DatabaseInfo) UpdateAndStoreKeyHashes(pathname, keyHash string) {
 
 	db.info[pathname] = keyHash
@@ -57,9 +57,9 @@ func (db *DatabaseInfo) UpdateAndStoreKeyHashes(pathname, keyHash string) {
 		stringline += tmpString
 	}
 	// fmt.Println(stringline)
-	err := ioutil.WriteFile(".databases", []byte(stringline), 0664)
+	err := ioutil.WriteFile(".databases", []byte(stringline), 0644)
 	if err != nil {
-		log.Fatalf("error writing to .databases...", err.Error())
+		log.Fatalln("error writing to .databases...", err.Error())
 	}
 	// fmt.Println(pathname, hex.EncodeToString([]byte(keyHash)))
 }
@@ -71,8 +71,8 @@ func (db *DatabaseInfo) DeleteDatabaseEntry(pathname string) {
 		stringline += tmpString
 	}
 	// fmt.Println(stringline)
-	err := ioutil.WriteFile(".databases", []byte(stringline), 0664)
+	err := ioutil.WriteFile(".databases", []byte(stringline), 0644)
 	if err != nil {
-		log.Fatalf("error writing to .databases...", err.Error())
+		log.Fatalln("error writing to .databases...", err.Error())
 	}
 }
