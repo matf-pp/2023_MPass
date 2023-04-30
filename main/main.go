@@ -50,6 +50,9 @@ func main() {
 
 	parser := argparse.NewParser("MPass", "Password manager program")
 	//commands
+
+	createCmd := parser.NewCommand("create", "creates a new database")
+
 	generateCmd := parser.NewCommand("generate", "generates new password")
 	lenOption := generateCmd.Int("l", "length", &argparse.Options{Required: true, Help: "length of an argument"})
 
@@ -104,6 +107,13 @@ func main() {
 		check(err)
 		clipboard.WriteAll(randomString)
 		fmt.Println("# Copied to clipboard!")
+	} else if createCmd.Happened() {
+		v := &core.FileVault{
+			FilePath: "",
+			VaultKey: "",
+		}
+		v.Create()
+		v.Store()
 	} else {
 		v := loadVault()
 		if listCmd.Happened() {
