@@ -23,48 +23,6 @@ type FileVault struct {
 	db                 databases.DatabaseInfo
 }
 
-// * leave these functions here or move them to another file? package?
-// func openDb() map[string]string {
-// 	database := make(map[string]string)
-// 	file, err := os.Open(".databases") //TODO: don't leave this hardcoded either. idc about it now
-// 	if err != nil {
-// 		log.Fatal(err)
-// 	}
-// 	scanner := bufio.NewScanner(file)
-// 	i := 0
-// 	for scanner.Scan() {
-// 		entry := strings.Split(scanner.Text(), ":")
-// 		database[entry[0]] = entry[1]
-// 		i++
-// 	}
-// 	// fmt.Println(database)
-// 	if err := scanner.Err(); err != nil {
-// 		log.Fatal(err)
-// 	}
-// 	return database
-
-// }
-
-//	func FindKey(pathfile string) string {
-//		db := openDb()
-//		return db[pathfile]
-//	}
-//
-//	func UpdateAndStoreKeyHashes(pathname, keyHash string) {
-//		db := openDb()
-//		db[pathname] = keyHash
-//		stringline := ""
-//		for key, val := range db {
-//			tmpString := key + ":" + val + "\n"
-//			stringline += tmpString
-//		}
-//		// fmt.Println(stringline)
-//		err := ioutil.WriteFile(".databases", []byte(stringline), 0664)
-//		if err != nil {
-//			log.Fatalf("error writing to .databases...", err.Error())
-//		}
-//		// fmt.Println(pathname, hex.EncodeToString([]byte(keyHash)))
-//	}
 func DoesFileExist(pathname string) (bool, string) {
 	_, err := os.Stat(pathname)
 	if os.IsNotExist(err) {
@@ -244,7 +202,7 @@ func (v *FileVault) PrintVault() {
 	fmt.Println("+++++++++++++++++++++++++++++++++++++++++++++++++")
 	for url, usernameMap := range v.entries {
 		for username, _ := range usernameMap {
-			fmt.Println(url, " : ", username)
+			fmt.Printf("+   %s : %-20s		+\n", url, username)
 		}
 	}
 	fmt.Println("+++++++++++++++++++++++++++++++++++++++++++++++++")

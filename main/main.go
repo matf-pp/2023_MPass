@@ -4,6 +4,7 @@ import (
 	"2023_MPass/core"
 	"2023_MPass/encryption"
 	"bufio"
+	"errors"
 	"fmt"
 	"os"
 	"strings"
@@ -18,14 +19,15 @@ func check(e error) {
 		panic(e)
 	}
 }
+
 func loadDatabase() (string, string) {
 	fmt.Println("Enter path to database: ")
 	reader := bufio.NewReader(os.Stdin)
 	filepath, err := reader.ReadString('\n')
 	check(err)
 	filepath_trim := strings.TrimSuffix(filepath, "\n")
-	fmt.Println("Enter passcode: ")
-	passwd, err := gopass.GetPasswd()
+	fmt.Println("Enter master password: ")
+	passwd, err := gopass.GetPasswdMasked()
 	check(err)
 
 	return filepath_trim, string(passwd)
@@ -50,7 +52,7 @@ func main() {
 	// vv.Create()
 	//* note: in order for clipboard to work users need to install xclip or xsel
 
-	parser := argparse.NewParser("MPass", "password manager program")
+	parser := argparse.NewParser("MPass", "Password manager program")
 	//commands
 	generateCmd := parser.NewCommand("generate", "generates new password")
 	lenOption := generateCmd.Int("l", "length", &argparse.Options{Required: true, Help: "length of an argument"})
@@ -67,7 +69,7 @@ func main() {
 	addCmd := parser.NewCommand("add", "adds new entry to vault")
 	addUrlOption := addCmd.String("u", "url", &argparse.Options{Required: true, Help: "adds url to entry.."})
 	addUsernameOption := addCmd.String("n", "username", &argparse.Options{Required: true, Help: "username we want to add for the new entry"})
-	addPasswordOption := addCmd.String("p", "password", &argparse.Options{Required: true, Help: "password we want to add to new entry"})
+	// addPasswordOption := addCmd.String("p", "password", &argparse.Options{Required: true, Help: "password we want to add to new entry"})
 
 	//change --masterpass
 	changeCmd := parser.NewCommand("change", "changes password entry or masterpass")
@@ -106,14 +108,21 @@ func main() {
 		randomString, err := encryption.GenerateRandomString(*lenOption)
 		check(err)
 		clipboard.WriteAll(randomString)
+		fmt.Println("# Copied to clipboard!")
 	} else {
 		v := loadVault()
 		if listCmd.Happened() {
 			v.PrintVault()
 		} else if copyCmd.Happened() {
 			entry := v.GetEntry(*copyUrlOption, *copyUsernameOption)
+			if entry == nil {
+				err := errors.New("Entry doesn't exist. Try again?")
+				fmt.Println(err)
+				os.Exit(0)
+			}
 			password := entry.GetPassword()
 			clipboard.WriteAll(password)
+			fmt.Println("# Copied to clipboard!")
 			//TODO: any way to timeout delete from clipboard?
 			// time.Sleep(5)
 			// exec.Command("xsel", "-z")
@@ -121,26 +130,34 @@ func main() {
 			// fmt.Println(string1)
 		} else if changeMasterPassCmd.Happened() {
 			fmt.Println("Enter new master password: ")
-			passwd, err := gopass.GetPasswd()
+			passwd, err := gopass.GetPasswdMasked()
 			check(err)
 			v.UpdateVaultKey(string(passwd)) //eg: newPassphrase1
-		} else if changeUsernameCmd.Happened() {
+		} else if changeUsernameCmd.Happened() { // change to non existing entry doesnt affect anything
 			v.UpdateEntryUsername(*changeUsernameUrlOption, *changeUsernameUsernameOption, *changeUsernameNewUsernameOption)
 			v.Store()
 		} else if changePasswordCmd.Happened() {
 			fmt.Println("Enter new entry password: ")
-			passwd, err := gopass.GetPasswd()
+			passwd, err := gopass.GetPasswdMasked()
 			check(err)
 			v.UpdateEntryPassword(*changePasswordUrlOption, *changePasswordUsernameOption, string(passwd))
 			v.Store()
-		} else if deleteCmd.Happened() {
+		} else if deleteCmd.Happened() { //deleting entry that doesnt exist doesnt affect the db
 			v.DeleteEntry(*deleteUrlOption, *deleteUsernameOption)
 			v.Store()
 		} else if addCmd.Happened() {
-			v.AddEntry(*addUrlOption, *addUsernameOption, *addPasswordOption)
+			fmt.Println("Enter password: ")
+			password, err := gopass.GetPasswdMasked()
+			check(err)
+			v.AddEntry(*addUrlOption, *addUsernameOption, string(password))
 			v.Store()
+			fmt.Println("# Added to database {}!")
 		} else if deleteDbCmd.Happened() {
-			v.Delete(*deleteDatabaseOption)
+			if v.FilePath == *deleteDatabaseOption {
+				v.Delete(*deleteDatabaseOption)
+			} else {
+				fmt.Println("Database with that name doesn't exist. Try again?")
+			}
 		}
 	}
 }
