@@ -13,7 +13,7 @@ XSel or XClip\
 [Installation guide](https://ostechnix.com/access-clipboard-contents-using-xclip-and-xsel-in-linux/)
 ## Installation
 ```
-git clone https://github.com/matf-pp/2023_MPass.git
+$ git clone https://github.com/matf-pp/2023_MPass.git
 ```
 or just download and extract the zip/tar.gz file.
 In terminal type the following commands
@@ -33,5 +33,5 @@ The binary is created for Linux based operating systems.
 
 ## Authors
 Project created by
-Ana Mihailović ([cholesski](https://github.com/cholesski)) and 
+Ana Mihajlović ([cholesski](https://github.com/cholesski)) and 
 Katarina Grbović ([gkatarina](https://github.com/gkatarina))
