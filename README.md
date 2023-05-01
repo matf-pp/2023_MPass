@@ -1,4 +1,7 @@
 # 2023_MPass
+
+[![Codacy Badge](https://app.codacy.com/project/badge/Grade/13da5432f0824aa984b9550909697435)](https://app.codacy.com/gh/matf-pp/2023_MPass/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade)
+
 CLI based, simple password manager desktop application for Linux. Provides functionalities such as storing, accessing, adding and modifying sensitive login information. Login entries are stored in an encrypted database. User can create one or multiple databases with unique master passwords, and to gain access to an existing database a correct master password needs to be entered. Encryption was implemented using AES-256 algorithm with GCM, and encryption keys are created using PBKDF2 hashing algorithm.
 
 Project was written in Go language.
