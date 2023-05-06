@@ -96,6 +96,13 @@ func main() {
 	deleteUrlOption := deleteCmd.String("u", "url", &argparse.Options{Required: true, Help: "url of entry we wish to delete"})
 	deleteUsernameOption := deleteCmd.String("n", "username", &argparse.Options{Required: true, Help: "username of entry we wish to delete"})
 
+	//createVault --path
+	createCmd := parser.NewCommand("create", "creates new vault")
+	filePathOption := createCmd.String("f", "filePath", &argparse.Options{Required: true, Help: "path to new vault"})
+
+	//listVaults 
+	listVaultsCmd := parser.NewCommand("listVaults", "lists all vaults")
+
 	err := parser.Parse(os.Args)
 	if err != nil {
 		fmt.Println(parser.Usage(err))
@@ -159,6 +166,8 @@ func main() {
 			} else {
 				fmt.Println("Database with that name doesn't exist. Try again?")
 			}
+		} else if createCmd.Happened(){
+			fmt.Println(*filePathOption)
 		}
 	}
 }
