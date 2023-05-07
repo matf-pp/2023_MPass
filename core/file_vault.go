@@ -10,8 +10,6 @@ import (
 	"log"
 	"os"
 	"strings"
-
-	"github.com/howeyc/gopass"
 )
 
 type FileVault struct {
@@ -46,22 +44,7 @@ func DoesFileExist(pathname string) (bool, string) {
 func (v *FileVault) Create() {
 	// var db databases.DatabaseInfo
 	v.db.OpenDb()
-	fmt.Println("Name your new database:")
-	reader := bufio.NewReader(os.Stdin)
-	filepath, err := reader.ReadString('\n')
-	if err != nil {
-		log.Fatalln("Failed reading string from input")
-	}
-	filepath = strings.TrimSuffix(filepath, "\n")
-
-	v.FilePath = filepath
-	fmt.Println("Enter new master password: ")
-	passwd, err := gopass.GetPasswd()
-	if err != nil {
-		log.Fatalln("master password error:", err.Error())
-	}
-	v.VaultKey = string(passwd)
-	data := `{ }`
+	data := "{ }"
 	ciphertext := encryption.Encrypt(v.VaultKey, data)
 	encryption.StoreEncryptedData(v.FilePath, ciphertext)
 
@@ -90,12 +73,13 @@ func (v *FileVault) Load() {
 	ciphertext := encryption.RetreiveEncryptedData(v.FilePath)
 	if encryption.ValidatePassword(v.VaultKey, ciphertext, authKey) {
 		jsonBytes := encryption.Decrypt(v.VaultKey, ciphertext)
+		// jsonBytes := "{ }"
 		if err := json.Unmarshal([]byte(jsonBytes), &(v.entries)); err != nil {
 			panic(err)
 		}
 	} else {
 		fmt.Println("Wrong password!")
-		os.Exit(0) //quits program if wrong password has been entered
+		os.Exit(1) //quits program if wrong password has been entered
 	}
 }
 
@@ -131,11 +115,10 @@ func (v *FileVault) Delete(pathfile string) {
 }
 
 func (v *FileVault) AddEntry(url string, username string, password string) {
-	if v.entries == nil {
-		v.entries = make(map[string]map[string]string)
-	}
 	siteEntries, exists := v.entries[url]
+
 	if !exists {
+		fmt.Println(v.entries == nil)
 		v.entries[url] = make(map[string]string)
 		siteEntries, _ = v.entries[url]
 	}
