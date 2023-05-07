@@ -131,6 +131,9 @@ func (v *FileVault) Delete(pathfile string) {
 }
 
 func (v *FileVault) AddEntry(url string, username string, password string) {
+	if v.entries == nil {
+		v.entries = make(map[string]map[string]string)
+	}
 	siteEntries, exists := v.entries[url]
 	if !exists {
 		v.entries[url] = make(map[string]string)
