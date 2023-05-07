@@ -73,7 +73,10 @@ func (v *FileVault) Load() {
 	ciphertext := encryption.RetreiveEncryptedData(v.FilePath)
 	if encryption.ValidatePassword(v.VaultKey, ciphertext, authKey) {
 		jsonBytes := encryption.Decrypt(v.VaultKey, ciphertext)
-		// jsonBytes := "{ }"
+
+		if (jsonBytes == "null"){
+			jsonBytes = "{ }"
+		}
 		if err := json.Unmarshal([]byte(jsonBytes), &(v.entries)); err != nil {
 			panic(err)
 		}
@@ -118,7 +121,6 @@ func (v *FileVault) AddEntry(url string, username string, password string) {
 	siteEntries, exists := v.entries[url]
 
 	if !exists {
-		fmt.Println(v.entries == nil)
 		v.entries[url] = make(map[string]string)
 		siteEntries, _ = v.entries[url]
 	}
