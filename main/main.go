@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"log"
 
 	"github.com/akamensky/argparse"
 	"github.com/atotto/clipboard"
@@ -20,35 +21,14 @@ func check(e error) {
 	}
 }
 
-func loadDatabase() (string, string) {
-	fmt.Println("Enter path to database: ")
-	reader := bufio.NewReader(os.Stdin)
-	filepath, err := reader.ReadString('\n')
-	check(err)
-	filepath_trim := strings.TrimSuffix(filepath, "\n")
-	fmt.Println("Enter master password: ")
-	passwd, err := gopass.GetPasswdMasked()
-	check(err)
-
-	return filepath_trim, string(passwd)
-
-}
-func loadVault() *core.FileVault {
-	filepath, passwd := loadDatabase()
-	v := &core.FileVault{
-
-		FilePath: filepath,
-		VaultKey: passwd,
-	}
-	v.Load()
-	return v
-}
 
 func main() {
 
 	//* note: in order for clipboard to work users need to install xclip or xsel
 
 	parser := argparse.NewParser("MPass", "Password manager program")
+	masterPassOption := parser.String("m", "masterpass", &argparse.Options{Required: false, Help: "masterpass"})
+	vaultNameOption := parser.String("v", "vault", &argparse.Options{Required: false, Help: "vault name"})
 	//commands
 
 	createCmd := parser.NewCommand("create", "creates a new database")
@@ -68,12 +48,12 @@ func main() {
 	addCmd := parser.NewCommand("add", "adds new entry to vault")
 	addUrlOption := addCmd.String("u", "url", &argparse.Options{Required: true, Help: "adds url to entry.."})
 	addUsernameOption := addCmd.String("n", "username", &argparse.Options{Required: true, Help: "username we want to add for the new entry"})
-	// addPasswordOption := addCmd.String("p", "password", &argparse.Options{Required: true, Help: "password we want to add to new entry"})
+	addPasswordOption := addCmd.String("p", "password", &argparse.Options{Required: false, Help: "password we want to add to new entry"})
 
 	//change --masterpass
 	changeCmd := parser.NewCommand("change", "changes password entry or masterpass")
 	changeMasterPassCmd := changeCmd.NewCommand("masterpass", "changes masterpass")
-	// newMasterPassOption := changeMasterPassCmd.String("n", "newPass", &argparse.Options{Required: true, Help: "takes in new masterpass"})
+	newMasterPassOption := changeMasterPassCmd.String("n", "new-masterpass", &argparse.Options{Required: false, Help: "takes in new masterpass"})
 
 	//delete --database
 	deleteDbCmd := parser.NewCommand("deletedb", "deletes an existing database")
@@ -89,19 +69,12 @@ func main() {
 	changePasswordCmd := changeCmd.NewCommand("password", "changes password of entry")
 	changePasswordUrlOption := changePasswordCmd.String("u", "url", &argparse.Options{Required: true, Help: "url of entry we wish to update"})
 	changePasswordUsernameOption := changePasswordCmd.String("n", "username", &argparse.Options{Required: true, Help: "username of entry we wish to update"})
-	// changePasswordNewPasswordOption := changePasswordCmd.String("p", "newpassword", &argparse.Options{Required: true, Help: "new password"})
+	changePasswordNewPasswordOption := changePasswordCmd.String("p", "newpassword", &argparse.Options{Required: false, Help: "new password"})
 
 	//delete --url --username
 	deleteCmd := parser.NewCommand("delete", "deletes entry")
 	deleteUrlOption := deleteCmd.String("u", "url", &argparse.Options{Required: true, Help: "url of entry we wish to delete"})
 	deleteUsernameOption := deleteCmd.String("n", "username", &argparse.Options{Required: true, Help: "username of entry we wish to delete"})
-
-	//createVault --path
-	createCmd := parser.NewCommand("create", "creates new vault")
-	filePathOption := createCmd.String("f", "filePath", &argparse.Options{Required: true, Help: "path to new vault"})
-
-	//listVaults 
-	listVaultsCmd := parser.NewCommand("listVaults", "lists all vaults")
 
 	err := parser.Parse(os.Args)
 	if err != nil {
@@ -114,15 +87,40 @@ func main() {
 		check(err)
 		clipboard.WriteAll(randomString)
 		fmt.Println("# Copied to clipboard!")
-	} else if createCmd.Happened() {
+	}  else {
 		v := &core.FileVault{
 			FilePath: "",
 			VaultKey: "",
 		}
-		v.Create()
-		v.Store()
-	} else {
-		v := loadVault()
+		if (*vaultNameOption == ""){
+			fmt.Println("Name your new database:")
+			reader := bufio.NewReader(os.Stdin)
+			filepath, err := reader.ReadString('\n')
+			if err != nil {
+				log.Fatalln("Failed reading string from input")
+			}
+			v.FilePath = strings.TrimSuffix(filepath, "\n")
+		} else {
+			v.FilePath = *vaultNameOption
+		}
+
+		if (*masterPassOption == ""){
+			fmt.Println("Enter master password: ")
+			passwd, err := gopass.GetPasswdMasked()
+			if err != nil {
+				log.Fatalln("master password error:", err.Error())
+			}
+			v.VaultKey = string(passwd)
+		} else {
+			v.VaultKey = *masterPassOption
+		}
+
+		if createCmd.Happened() {
+			v.Create()
+			v.Store()
+		} else {
+			v.Load()
+		}
 		if listCmd.Happened() {
 			v.PrintVault()
 		} else if copyCmd.Happened() {
@@ -130,34 +128,51 @@ func main() {
 			if entry == nil {
 				err := errors.New("Entry doesn't exist. Try again?")
 				fmt.Println(err)
-				os.Exit(0)
+				os.Exit(1)
 			}
 			password := entry.GetPassword()
 			clipboard.WriteAll(password)
 			fmt.Println("# Copied to clipboard!")
-
 		} else if changeMasterPassCmd.Happened() {
-			fmt.Println("Enter new master password: ")
-			passwd, err := gopass.GetPasswdMasked()
-			check(err)
-			v.UpdateVaultKey(string(passwd)) //eg: newPassphrase1
+			passwd := *newMasterPassOption
+			if (passwd == ""){
+				fmt.Println("Enter new master password: ")
+				newPass, err := gopass.GetPasswdMasked()
+				if err != nil {
+					log.Fatalln("master password error:", err.Error())
+				}
+				passwd = string(newPass)
+			}
+			v.UpdateVaultKey(passwd)
 		} else if changeUsernameCmd.Happened() { // change to non existing entry doesnt affect anything
 			v.UpdateEntryUsername(*changeUsernameUrlOption, *changeUsernameUsernameOption, *changeUsernameNewUsernameOption)
 			v.Store()
 		} else if changePasswordCmd.Happened() {
-			fmt.Println("Enter new entry password: ")
-			passwd, err := gopass.GetPasswdMasked()
-			check(err)
-			v.UpdateEntryPassword(*changePasswordUrlOption, *changePasswordUsernameOption, string(passwd))
+			passwd := *changePasswordNewPasswordOption
+			if (passwd == ""){
+				fmt.Println("Enter new password : ")
+				newPass, err := gopass.GetPasswdMasked()
+				if err != nil {
+					log.Fatalln("password error:", err.Error())
+				}
+				passwd = string(newPass)
+			}
+			v.UpdateEntryPassword(*changePasswordUrlOption, *changePasswordUsernameOption, passwd)
 			v.Store()
 		} else if deleteCmd.Happened() { //deleting entry that doesnt exist doesnt affect the db
 			v.DeleteEntry(*deleteUrlOption, *deleteUsernameOption)
 			v.Store()
 		} else if addCmd.Happened() {
-			fmt.Println("Enter password: ")
-			password, err := gopass.GetPasswdMasked()
-			check(err)
-			v.AddEntry(*addUrlOption, *addUsernameOption, string(password))
+			passwd := *addPasswordOption
+			if (passwd == ""){
+				fmt.Println("Enter password : ")
+				newPass, err := gopass.GetPasswdMasked()
+				if err != nil {
+					log.Fatalln("password error:", err.Error())
+				}
+				passwd = string(newPass)
+			}
+			v.AddEntry(*addUrlOption, *addUsernameOption, passwd)
 			v.Store()
 			fmt.Println("# Added to database!")
 		} else if deleteDbCmd.Happened() {
@@ -166,8 +181,6 @@ func main() {
 			} else {
 				fmt.Println("Database with that name doesn't exist. Try again?")
 			}
-		} else if createCmd.Happened(){
-			fmt.Println(*filePathOption)
 		}
 	}
 }
