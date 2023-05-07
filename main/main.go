@@ -50,7 +50,7 @@ func main() {
 	addUsernameOption := addCmd.String("n", "username", &argparse.Options{Required: true, Help: "username we want to add for the new entry"})
 	addPasswordOption := addCmd.String("p", "password", &argparse.Options{Required: false, Help: "password we want to add to new entry"})
 
-	//change --masterpass
+	//change
 	changeCmd := parser.NewCommand("change", "changes password entry or masterpass")
 	changeMasterPassCmd := changeCmd.NewCommand("masterpass", "changes masterpass")
 	newMasterPassOption := changeMasterPassCmd.String("n", "new-masterpass", &argparse.Options{Required: false, Help: "takes in new masterpass"})
@@ -59,17 +59,17 @@ func main() {
 	deleteDbCmd := parser.NewCommand("deletedb", "deletes an existing database")
 	deleteDatabaseOption := deleteDbCmd.String("b", "database", &argparse.Options{Required: true, Help: "name of database we want to delete"})
 
-	//change username --url --username --newusername
+	//change username --url --username --new-username
 	changeUsernameCmd := changeCmd.NewCommand("username", "changes username of entry")
 	changeUsernameUrlOption := changeUsernameCmd.String("u", "url", &argparse.Options{Required: true, Help: "url of entry we wish to update"})
 	changeUsernameUsernameOption := changeUsernameCmd.String("n", "username", &argparse.Options{Required: true, Help: "username of entry we wish to update"})
-	changeUsernameNewUsernameOption := changeUsernameCmd.String("w", "newusername", &argparse.Options{Required: true, Help: "new username"})
+	changeUsernameNewUsernameOption := changeUsernameCmd.String("w", "new-username", &argparse.Options{Required: true, Help: "new username"})
 
-	//change password --url --username --newpassword
+	//change password --url --username --new-password
 	changePasswordCmd := changeCmd.NewCommand("password", "changes password of entry")
 	changePasswordUrlOption := changePasswordCmd.String("u", "url", &argparse.Options{Required: true, Help: "url of entry we wish to update"})
 	changePasswordUsernameOption := changePasswordCmd.String("n", "username", &argparse.Options{Required: true, Help: "username of entry we wish to update"})
-	changePasswordNewPasswordOption := changePasswordCmd.String("p", "newpassword", &argparse.Options{Required: false, Help: "new password"})
+	changePasswordNewPasswordOption := changePasswordCmd.String("p", "new-password", &argparse.Options{Required: false, Help: "new password"})
 
 	//delete --url --username
 	deleteCmd := parser.NewCommand("delete", "deletes entry")
