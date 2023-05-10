@@ -1,7 +1,10 @@
 package core
 
+import "gorm.io/gorm"
+
 type Vault interface {
 	DoesFileExist(pathname string) (bool, string)
+	OpenVault() *gorm.DB
 	Create()
 	Load()
 	Store()

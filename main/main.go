@@ -1,31 +1,33 @@
 package main
 
 import (
-	"2023_MPass/core"
-	"2023_MPass/encryption"
 	"bufio"
+	vault "db/core"
+	"db/encryption"
 	"errors"
 	"fmt"
+	"log"
 	"os"
 	"strings"
-	"log"
 
 	"github.com/akamensky/argparse"
 	"github.com/atotto/clipboard"
 	"github.com/howeyc/gopass"
 )
 
-func check(e error) {
-	if e != nil {
-		panic(e)
-	}
-}
-
+// TODO: error handling
 
 func main() {
 
-	//* note: in order for clipboard to work users need to install xclip or xsel
-
+	// var v vault.FileVault
+	// // fmt.Println(v)
+	// v.FilePath = "test1"
+	// v.VaultKey = "key1"
+	// // v.Create()
+	// v.Load()
+	// v.AddEntry("google.com", "username1", "passwd1")
+	// v.Load()
+	// v.PrintVault()
 	parser := argparse.NewParser("MPass", "Password manager program")
 	masterPassOption := parser.String("m", "masterpass", &argparse.Options{Required: false, Help: "masterpass"})
 	vaultNameOption := parser.String("v", "vault", &argparse.Options{Required: false, Help: "vault name"})
@@ -84,16 +86,19 @@ func main() {
 
 	if generateCmd.Happened() {
 		randomString, err := encryption.GenerateRandomString(*lenOption)
-		check(err)
+		// check(err)
+		if err != nil {
+			log.Fatalln(err.Error())
+		}
 		clipboard.WriteAll(randomString)
 		fmt.Println("# Copied to clipboard!")
-	}  else {
-		v := &core.FileVault{
+	} else {
+		v := &vault.FileVault{
 			FilePath: "",
 			VaultKey: "",
 		}
-		if (*vaultNameOption == ""){
-			fmt.Println("Name your new database:")
+		if *vaultNameOption == "" {
+			fmt.Println("Open database: ")
 			reader := bufio.NewReader(os.Stdin)
 			filepath, err := reader.ReadString('\n')
 			if err != nil {
@@ -104,7 +109,7 @@ func main() {
 			v.FilePath = *vaultNameOption
 		}
 
-		if (*masterPassOption == ""){
+		if *masterPassOption == "" {
 			fmt.Println("Enter master password: ")
 			passwd, err := gopass.GetPasswdMasked()
 			if err != nil {
@@ -117,7 +122,7 @@ func main() {
 
 		if createCmd.Happened() {
 			v.Create()
-			v.Store()
+			// v.Store()
 		} else {
 			v.Load()
 		}
@@ -128,14 +133,14 @@ func main() {
 			if entry == nil {
 				err := errors.New("Entry doesn't exist. Try again?")
 				fmt.Println(err)
-				os.Exit(1)
+				os.Exit(0)
 			}
 			password := entry.GetPassword()
 			clipboard.WriteAll(password)
 			fmt.Println("# Copied to clipboard!")
 		} else if changeMasterPassCmd.Happened() {
 			passwd := *newMasterPassOption
-			if (passwd == ""){
+			if passwd == "" {
 				fmt.Println("Enter new master password: ")
 				newPass, err := gopass.GetPasswdMasked()
 				if err != nil {
@@ -149,7 +154,7 @@ func main() {
 			v.Store()
 		} else if changePasswordCmd.Happened() {
 			passwd := *changePasswordNewPasswordOption
-			if (passwd == ""){
+			if passwd == "" {
 				fmt.Println("Enter new password : ")
 				newPass, err := gopass.GetPasswdMasked()
 				if err != nil {
@@ -164,7 +169,7 @@ func main() {
 			v.Store()
 		} else if addCmd.Happened() {
 			passwd := *addPasswordOption
-			if (passwd == ""){
+			if passwd == "" {
 				fmt.Println("Enter password : ")
 				newPass, err := gopass.GetPasswdMasked()
 				if err != nil {

@@ -1,80 +1,83 @@
 package core
 
 import (
-	"2023_MPass/databases"
-	"2023_MPass/encryption"
-	"bufio"
+	dat "db/databases"
+
+	"db/encryption"
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"log"
 	"os"
-	"strings"
+
+	"gorm.io/driver/sqlite"
+	"gorm.io/gorm"
 )
 
 type FileVault struct {
 	FilePath, VaultKey string
 	entries            map[string]map[string]string
-	db                 databases.DatabaseInfo
+}
+type VaultData struct {
+	IdName         string `gorm:"primaryKey"`
+	EncryptedEntry string
 }
 
-func DoesFileExist(pathname string) (bool, string) {
+func DoesFileExist(pathname string) bool {
 	_, err := os.Stat(pathname)
 	if os.IsNotExist(err) {
-		fmt.Println("File not found. Try again or create a new database? -y -n")
-		reader := bufio.NewReader(os.Stdin)
-		readString, error := reader.ReadString('\n')
-		if error != nil {
-			log.Fatalln("Error while reading input -y -n")
-		}
-		readString = strings.TrimSuffix(readString, "\n")
-		if readString == "-y" {
-			// var v core.FileVault
-			// v.Create()
-			return false, "-y"
-		} else if readString == "-n" {
-			return false, "-n"
-		} else {
-			log.Fatalln("Invalid input..")
+		fmt.Println("File not found. Try again or create a new database....")
+		return false
+	}
+	return true
+}
+func OpenVault() *gorm.DB {
+	database, err := gorm.Open(sqlite.Open("../main/databases.db"), &gorm.Config{})
+
+	if err != nil {
+		log.Fatalln(err.Error())
+	}
+	return database
+}
+func (v *FileVault) Create() {
+	db := OpenVault()
+	data := "{ }"
+
+	if !db.Migrator().HasTable(&VaultData{}) {
+		err := db.Migrator().CreateTable(&VaultData{})
+		if err != nil {
+			log.Fatalln(err.Error())
 		}
 	}
-	return true, "..."
-}
 
-func (v *FileVault) Create() {
-	// var db databases.DatabaseInfo
-	v.db.OpenDb()
-	data := "{ }"
 	ciphertext := encryption.Encrypt(v.VaultKey, data)
-	encryption.StoreEncryptedData(v.FilePath, ciphertext)
+	vault := VaultData{
+		IdName:         v.FilePath,
+		EncryptedEntry: ciphertext,
+	}
+	db.Where("id_name == ?", v.FilePath).Save(&vault)
 
 	authKey, _ := encryption.CreateAuthKey(v.VaultKey, ciphertext)
 
-	v.db.UpdateAndStoreKeyHashes(v.FilePath, hex.EncodeToString(authKey))
-	// StoreKeyHashes()
-	// key := GenerateAndStoreKeyFile(v.FilePath)
-	// encryption.StoreAuthKey(key, authKey)
+	dat.UpdateAndStoreKeyHashes(v.FilePath, hex.EncodeToString(authKey))
 
 }
 
 func (v *FileVault) Load() {
-	v.db.OpenDb()
-	authKey := v.db.FindKey(v.FilePath)
-	// fmt.Println(authKey)
-	exists, file := DoesFileExist(v.FilePath)
-	if exists == false {
-		if file == "-y" {
-			v.Create()
-			os.Exit(0)
-		} else if file == "-n" {
-			os.Exit(0)
-		}
+	db := OpenVault()
+	authKey := dat.FindKey(v.FilePath)
+
+	encryptedInfo := VaultData{}
+	db.Where("id_name == ?", v.FilePath).Find(&encryptedInfo)
+	if len(encryptedInfo.IdName) == 0 {
+		err := fmt.Errorf("No vault found...")
+		log.Fatalln(err)
 	}
-	ciphertext := encryption.RetreiveEncryptedData(v.FilePath)
+	ciphertext := encryptedInfo.EncryptedEntry
 	if encryption.ValidatePassword(v.VaultKey, ciphertext, authKey) {
 		jsonBytes := encryption.Decrypt(v.VaultKey, ciphertext)
 
-		if (jsonBytes == "null"){
+		if jsonBytes == "null" {
 			jsonBytes = "{ }"
 		}
 		if err := json.Unmarshal([]byte(jsonBytes), &(v.entries)); err != nil {
@@ -82,38 +85,33 @@ func (v *FileVault) Load() {
 		}
 	} else {
 		fmt.Println("Wrong password!")
-		os.Exit(1) //quits program if wrong password has been entered
+		os.Exit(0) //quits program if wrong password has been entered
 	}
 }
 
 func (v *FileVault) Store() {
-	v.db.OpenDb()
+	db := OpenVault()
 	jsonBytes, err := json.Marshal(v.entries)
 	if err != nil {
 		panic(err)
 	}
 
-	//encrypt jsonBytes & save authentication key
-	// key, _ := FindKey(v.FilePath)
-
+	enc := VaultData{}
 	ciphertext := encryption.Encrypt(v.VaultKey, string(jsonBytes))
-	encryption.StoreEncryptedData(v.FilePath, ciphertext)
 
+	db.Where("id_name == ?", v.FilePath).Find(&enc)
+	enc.EncryptedEntry = ciphertext
+	db.Save(&enc)
 	authKey, _ := encryption.CreateAuthKey(v.VaultKey, ciphertext)
-
-	v.db.UpdateAndStoreKeyHashes(v.FilePath, hex.EncodeToString(authKey))
-	// StoreKeyHashes()
-	// encryption.StoreAuthKey(key, authKey)
+	dat.UpdateAndStoreKeyHashes(v.FilePath, hex.EncodeToString(authKey))
 
 }
 
 func (v *FileVault) Delete(pathfile string) {
-	v.db.OpenDb()
-	err := os.Remove(v.FilePath)
-	if err != nil {
-		log.Fatalln("failed removing the file..", err.Error())
-	}
-	v.db.DeleteDatabaseEntry(pathfile)
+	db := OpenVault()
+	vaultInfo := VaultData{}
+	db.Where("id_name == ?", pathfile).Delete(&vaultInfo)
+	dat.DeleteDatabaseEntry(pathfile)
 
 }
 
@@ -184,13 +182,13 @@ func (v *FileVault) UpdateEntryPassword(url string, username string, newPassword
 
 func (v *FileVault) PrintVault() {
 	fmt.Println("\t\tDATABASE: " + v.FilePath)
-	fmt.Println("+++++++++++++++++++++++++++++++++++++++++++++++++")
+	fmt.Println("+++++++++++++++++++++++++++++++++++++++++++++++")
 	for url, usernameMap := range v.entries {
 		for username := range usernameMap {
-			fmt.Printf("+   %s : %-20s		+\n", url, username)
+			fmt.Printf("+   %s : %-22s		+\n", url, username)
 		}
 	}
-	fmt.Println("+++++++++++++++++++++++++++++++++++++++++++++++++")
+	fmt.Println("+++++++++++++++++++++++++++++++++++++++++++++++")
 }
 
 func (v *FileVault) UpdateVaultKey(newPassphrase string) {

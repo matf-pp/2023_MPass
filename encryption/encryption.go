@@ -11,7 +11,6 @@ import (
 	"crypto/rand"
 	"crypto/sha256"
 	"encoding/hex"
-	"io/ioutil"
 	"log"
 	"strings"
 
@@ -58,42 +57,13 @@ func CreateAuthKey(passphrase, cipthertext string) ([]byte, []byte) {
 	return DeriveKey(string(key), []byte(passphrase))
 }
 
-// * obsolete
-func StoreAuthKey(pathname string, authKey []byte) {
-	authKeyHex := hex.EncodeToString(authKey)
-	err := ioutil.WriteFile(pathname, []byte(authKeyHex), 0644)
-	if err != nil {
-		log.Fatal("key storage error")
-	}
-}
-func RetreiveAuthKey(pathname string) []byte {
-	authKeyHex, err := ioutil.ReadFile(pathname)
-	if err != nil {
-		log.Fatalln("can't retreive the key..")
-	}
-	authKey, _ := hex.DecodeString(string(authKeyHex))
-	return authKey
-}
-func StoreEncryptedData(pathname, encryptedData string) {
-	err := ioutil.WriteFile(pathname, []byte(encryptedData), 0644)
-	if err != nil {
-		log.Fatalln("can't store data...")
-	}
-}
-func RetreiveEncryptedData(pathname string) string {
-
-	data, err := ioutil.ReadFile(pathname)
-
-	if err != nil {
-		log.Fatalln("Can't retreive data..")
-	}
-	return string(data)
-}
 func ValidatePassword(passphrase, cipthertext string, authKey string) bool {
 	//* NIKAD ne proveravati hash sa []byte konverzijom nego hex.Decode string!!!!!
 	key, _ := CreateAuthKey(passphrase, cipthertext)
+	// fmt.Println("cipher in encryption:")
+	// fmt.Println(cipthertext)
 	// fmt.Println(hex.EncodeToString(key))
-	// fmt.Println(hex.EncodeToString(authKey))
+	// fmt.Println(authKey)
 	authKeyByte, err := hex.DecodeString(authKey)
 
 	//* nil byte pri proveri nije smetao al mogu cisto reda radi da ga sklonim da se osiguram

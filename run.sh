@@ -1,3 +1,3 @@
-cd main
-go build main.go
-./main
+cd tui
+go build tui_main.go -o passwordManager
+./passwordManager.go
