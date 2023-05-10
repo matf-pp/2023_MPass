@@ -15,7 +15,7 @@ import (
 	"github.com/howeyc/gopass"
 )
 
-// TODO: error handling
+// TODO (read one day maybe): better error handling. right now it does the job
 
 func main() {
 

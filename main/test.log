@@ -1,101 +1,26 @@
-+ rm -f 'test_*.txt'
-+ ./main create --vault test_1.txt --masterpass mp
-?? 
-....
-auth key.. 91ef3757b26c3d33fc036b55fcbb70d967266643aea0e68bd4cd21f7509c9e5c
-+ ./main list --vault test_1.txt --masterpass mp
-....
-cipher in encryption:
-391d3f47045220b9-629a64a914e8ecef138383cd-e029865615055a4e706b0dc33ed4a4b2b8ca87
-91ef3757b26c3d33fc036b55fcbb70d967266643aea0e68bd4cd21f7509c9e5c
-91ef3757b26c3d33fc036b55fcbb70d967266643aea0e68bd4cd21f7509c9e5c
-		DATABASE: test_1.txt
++ ./main create --vault test_1 --masterpass mp
++ ./main list --vault test_1 --masterpass mp
+		DATABASE: test_1
 +++++++++++++++++++++++++++++++++++++++++++++++
 +++++++++++++++++++++++++++++++++++++++++++++++
-+ ./main add --vault test_1.txt --masterpass mp --url ana.com --username ana --password ana
-....
-cipher in encryption:
-391d3f47045220b9-629a64a914e8ecef138383cd-e029865615055a4e706b0dc33ed4a4b2b8ca87
-91ef3757b26c3d33fc036b55fcbb70d967266643aea0e68bd4cd21f7509c9e5c
-91ef3757b26c3d33fc036b55fcbb70d967266643aea0e68bd4cd21f7509c9e5c
-....
-115178f4b0f6f93edc6d847c8fdd7ee4e2e63e3b6d636ffb69af3cdd14460fcb
-auth key.. 115178f4b0f6f93edc6d847c8fdd7ee4e2e63e3b6d636ffb69af3cdd14460fcb
++ ./main add --vault test_1 --masterpass mp --url ana.com --username ana --password ana
 # Added to database!
-+ ./main add --vault test_1.txt --masterpass mp --url ana2.com --username ana2 --password ana2
-....
-cipher in encryption:
-b66b52eac3feb5d9-0e814ff3257ae9b36a6a824d-670c1fdcb8b0327ab320ee5b1adb8f8858dcd8a46d9c475a2c9ffffc31155af9cabc3c0654fb3766fc
-115178f4b0f6f93edc6d847c8fdd7ee4e2e63e3b6d636ffb69af3cdd14460fcb
-115178f4b0f6f93edc6d847c8fdd7ee4e2e63e3b6d636ffb69af3cdd14460fcb
-....
-20d05633a0b20898227ec25dacf6398d4178e1caacaf7e01b4ac10380a8c5c4c
-auth key.. 20d05633a0b20898227ec25dacf6398d4178e1caacaf7e01b4ac10380a8c5c4c
++ ./main add --vault test_1 --masterpass mp --url ana2.com --username ana2 --password ana2
 # Added to database!
-+ ./main add --vault test_1.txt --masterpass mp --url ana.com --username ana3 --password ana3
-....
-cipher in encryption:
-a79f58554e790a29-d967589a69c2dd644004a41f-c17a620793a0f54dd79fb1dae2c0ba86c4d99c4afdf0b4b6b2548acee73358b504b5d987428f1088882f8322013fa22246b2b7e80bea40ec4e16027867a350e2088e494a
-20d05633a0b20898227ec25dacf6398d4178e1caacaf7e01b4ac10380a8c5c4c
-20d05633a0b20898227ec25dacf6398d4178e1caacaf7e01b4ac10380a8c5c4c
-....
-63ece60fbac12eca78222f653933838396222d4560de213d54a0e0dffa50499b
-auth key.. 63ece60fbac12eca78222f653933838396222d4560de213d54a0e0dffa50499b
++ ./main add --vault test_1 --masterpass mp --url ana.com --username ana3 --password ana3
 # Added to database!
-+ ./main list --vault test_1.txt --masterpass mp
-....
-cipher in encryption:
-c9f5ada09ccda8cb-cff7979d4a785feb1ee0749e-faf6f3e0d63766de2c4889b681056cb1f39ea15b83222bde911871b3a2f59a2a75ac8105b292c901f4fa0a6baf28081db0de4695128da46bb2e1ab42b26a466aba592a965bb05c331665c49a90b37f67a63f
-63ece60fbac12eca78222f653933838396222d4560de213d54a0e0dffa50499b
-63ece60fbac12eca78222f653933838396222d4560de213d54a0e0dffa50499b
-		DATABASE: test_1.txt
++ ./main list --vault test_1 --masterpass mp
+		DATABASE: test_1
 +++++++++++++++++++++++++++++++++++++++++++++++
-+   ana.com : ana                 		+
-+   ana.com : ana3                		+
-+   ana2.com : ana2                		+
++   ana.com : ana                   		+
++   ana.com : ana3                  		+
++   ana2.com : ana2                  		+
 +++++++++++++++++++++++++++++++++++++++++++++++
-+ ./main delete --vault test_1.txt --masterpass mp --url ana.com --username ana
-....
-cipher in encryption:
-c9f5ada09ccda8cb-cff7979d4a785feb1ee0749e-faf6f3e0d63766de2c4889b681056cb1f39ea15b83222bde911871b3a2f59a2a75ac8105b292c901f4fa0a6baf28081db0de4695128da46bb2e1ab42b26a466aba592a965bb05c331665c49a90b37f67a63f
-63ece60fbac12eca78222f653933838396222d4560de213d54a0e0dffa50499b
-63ece60fbac12eca78222f653933838396222d4560de213d54a0e0dffa50499b
-....
-103730a14032c3fa41cd3a7a317704d213a68f769aef765c48c2abcdb4c3be7b
-auth key.. 103730a14032c3fa41cd3a7a317704d213a68f769aef765c48c2abcdb4c3be7b
-+ ./main delete --vault test_1.txt --masterpass mp --url ana2.com --username ana2
-....
-cipher in encryption:
-3e01bda206192c9d-e9b7dc02bc8c14d590d21cc1-07c61fb293248f037b4bde0db33103790be6ab9b6b94a0d239ebf9e460eeea8032bbc6108a7aaa8fedab98db0aecf084c2e0862f4d645f1219e2c587428b2f4b114426445d55
-103730a14032c3fa41cd3a7a317704d213a68f769aef765c48c2abcdb4c3be7b
-103730a14032c3fa41cd3a7a317704d213a68f769aef765c48c2abcdb4c3be7b
-....
-3ea697f556ebae155d8a7360eeafc4eece2fc9ed361c09e7334a35747d9c0d84
-auth key.. 3ea697f556ebae155d8a7360eeafc4eece2fc9ed361c09e7334a35747d9c0d84
-+ ./main delete --vault test_1.txt --masterpass mp --url ana.com --username ana3
-....
-cipher in encryption:
-5c492f07464fe78d-286a7bd60864360111fbd0b6-e178df209515551625ccc0766b9bd5ec3769ddb94992f368192e923e2828232bdef2668a15c492f1be5af759afe36c9995f299078049d23807
-3ea697f556ebae155d8a7360eeafc4eece2fc9ed361c09e7334a35747d9c0d84
-3ea697f556ebae155d8a7360eeafc4eece2fc9ed361c09e7334a35747d9c0d84
-....
-8e1745464e5f8bb5e1f702b0788dfbbb107caf96e3c21a41c3a43083432e0b17
-auth key.. 8e1745464e5f8bb5e1f702b0788dfbbb107caf96e3c21a41c3a43083432e0b17
-+ ./main delete --vault test_1.txt --masterpass mp --url ana.com --username ana3
-....
-cipher in encryption:
-76f28612ea1d4914-c4a2fc98d8fc80f1242e5275-3593b265562b71ec27ec813719be776019a81ca8679bf017adffc15c1783b12314b075b65332686fc7c5122f
-8e1745464e5f8bb5e1f702b0788dfbbb107caf96e3c21a41c3a43083432e0b17
-8e1745464e5f8bb5e1f702b0788dfbbb107caf96e3c21a41c3a43083432e0b17
-....
-c9ec729042e1eda36b837f918d003d15756161863f9d2fb891ef5515ff006c77
-auth key.. c9ec729042e1eda36b837f918d003d15756161863f9d2fb891ef5515ff006c77
-+ ./main list --vault test_1.txt --masterpass mp
-....
-cipher in encryption:
-21cf462f0126a00a-8a7c01058b94323bc1828cbb-600b2c15c2eeb0afa2402bd3303e81a1487eb7505140d0f7a7fa839eb552c21b1690913e81bef5621beafebd
-c9ec729042e1eda36b837f918d003d15756161863f9d2fb891ef5515ff006c77
-c9ec729042e1eda36b837f918d003d15756161863f9d2fb891ef5515ff006c77
-		DATABASE: test_1.txt
++ ./main delete --vault test_1 --masterpass mp --url ana.com --username ana
++ ./main delete --vault test_1 --masterpass mp --url ana2.com --username ana2
++ ./main delete --vault test_1 --masterpass mp --url ana.com --username ana3
++ ./main delete --vault test_1 --masterpass mp --url ana.com --username ana3
++ ./main list --vault test_1 --masterpass mp
+		DATABASE: test_1
 +++++++++++++++++++++++++++++++++++++++++++++++
 +++++++++++++++++++++++++++++++++++++++++++++++

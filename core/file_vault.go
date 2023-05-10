@@ -70,8 +70,8 @@ func (v *FileVault) Load() {
 	encryptedInfo := VaultData{}
 	db.Where("id_name == ?", v.FilePath).Find(&encryptedInfo)
 	if len(encryptedInfo.IdName) == 0 {
-		err := fmt.Errorf("No vault found...")
-		log.Fatalln(err)
+		fmt.Errorf("No vault found...")
+		os.Exit(0)
 	}
 	ciphertext := encryptedInfo.EncryptedEntry
 	if encryption.ValidatePassword(v.VaultKey, ciphertext, authKey) {

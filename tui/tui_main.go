@@ -1,9 +1,11 @@
 package main
 
 import (
-	"github.com/gdamore/tcell/v2"
-    "github.com/rivo/tview"
 	"os/exec"
+	"strings"
+
+	"github.com/gdamore/tcell/v2"
+	"github.com/rivo/tview"
 )
 
 func check(e error) {
@@ -34,7 +36,7 @@ func main() {
 			app.Stop()
 		})
 
-	var textView = tview.NewTextView().SetTextColor(tcell.ColorRed)
+	var textView = tview.NewTextView().SetTextColor(tcell.ColorWhiteSmoke).SetTextAlign(tview.AlignCenter)
 
 	var masterPassForm = tview.NewForm().
 		AddInputField("Vault name", "", 20, nil, nil).
@@ -44,27 +46,36 @@ func main() {
 		vault := getInputFieldText(masterPassForm, 0)
 		oldMasterPass := getInputFieldText(masterPassForm, 1)
 		newMasterPass := getInputFieldText(masterPassForm, 2)
-		_, err := exec.Command("../main/main","change", "masterpass", "--vault", vault, 
-		"--masterpass", oldMasterPass, "--new-masterpass", newMasterPass).Output()
-		check(err)
+		_, err := exec.Command("../main/main", "change", "masterpass", "--vault", vault,
+			"--masterpass", oldMasterPass, "--new-masterpass", newMasterPass).Output()
+		vault = strings.TrimSpace(vault)
+		oldMasterPass = strings.TrimSpace(oldMasterPass)
+		newMasterPass = strings.TrimSpace(newMasterPass)
+		if vault != "" && oldMasterPass != "" && newMasterPass != "" {
+			check(err)
+		}
 	}).
-	AddButton("Quit", func() {
-		app.Stop()
-	})
+		AddButton("Quit", func() {
+			app.Stop()
+		})
 
 	var createForm = tview.NewForm().
-	AddInputField("Vault name", "", 20, nil, nil).
-	AddPasswordField("Masterpass", "", 20, '*', nil)
+		AddInputField("Vault name", "", 20, nil, nil).
+		AddPasswordField("Masterpass", "", 20, '*', nil)
 	createForm.AddButton("Create", func() {
 		vault := getInputFieldText(createForm, 0)
 		masterPass := getInputFieldText(createForm, 1)
-		_, err := exec.Command("../main/main","create", "--vault", vault, 
-		"--masterpass", masterPass).Output()
-		check(err)
+		_, err := exec.Command("../main/main", "create", "--vault", vault,
+			"--masterpass", masterPass).Output()
+		vault = strings.TrimSpace(vault)
+		masterPass = strings.TrimSpace(masterPass)
+		if vault != "" && masterPass != "" {
+			check(err)
+		}
 	}).
-	AddButton("Quit", func() {
-		app.Stop()
-	})
+		AddButton("Quit", func() {
+			app.Stop()
+		})
 
 	var cdForm = tview.NewForm().
 		AddInputField("Url", "", 20, nil, nil).
@@ -76,22 +87,36 @@ func main() {
 		username := getInputFieldText(cdForm, 1)
 		vault := getInputFieldText(cdForm, 2)
 		masterPass := getInputFieldText(cdForm, 3)
-		_, err := exec.Command("../main/main","copy", "--vault", vault, 
-		"--masterpass", masterPass, "--url", url, "--username", username).Output()
-		check(err)
+		_, err := exec.Command("../main/main", "copy", "--vault", vault,
+			"--masterpass", masterPass, "--url", url, "--username", username).Output()
+		url = strings.TrimSpace(url)
+		username = strings.TrimSpace(username)
+		vault = strings.TrimSpace(vault)
+		masterPass = strings.TrimSpace(masterPass)
+
+		if url != "" && username != "" && vault != "" && masterPass != "" {
+			check(err)
+		}
 	}).
-	AddButton("Delete", func() {
-		url := getInputFieldText(cdForm, 0)
-		username := getInputFieldText(cdForm, 1)
-		vault := getInputFieldText(cdForm, 2)
-		masterPass := getInputFieldText(cdForm, 3)
-		_, err := exec.Command("../main/main","delete", "--vault", vault, 
-		"--masterpass", masterPass, "--url", url, "--username", username).Output()
-		check(err)
-	}).
-	AddButton("Quit", func() {
-		app.Stop()
-	})
+		AddButton("Delete", func() {
+			url := getInputFieldText(cdForm, 0)
+			username := getInputFieldText(cdForm, 1)
+			vault := getInputFieldText(cdForm, 2)
+			masterPass := getInputFieldText(cdForm, 3)
+			_, err := exec.Command("../main/main", "delete", "--vault", vault,
+				"--masterpass", masterPass, "--url", url, "--username", username).Output()
+			url = strings.TrimSpace(url)
+			username = strings.TrimSpace(username)
+			vault = strings.TrimSpace(vault)
+			masterPass = strings.TrimSpace(masterPass)
+
+			if url != "" && username != "" && vault != "" && masterPass != "" {
+				check(err)
+			}
+		}).
+		AddButton("Quit", func() {
+			app.Stop()
+		})
 
 	var addForm = tview.NewForm().
 		AddInputField("Url", "", 20, nil, nil).
@@ -105,19 +130,28 @@ func main() {
 		vault := getInputFieldText(addForm, 2)
 		password := getInputFieldText(addForm, 3)
 		masterPassword := getInputFieldText(addForm, 4)
-		_, err := exec.Command("../main/main","add", "--vault", vault, "--masterpass",
-		masterPassword, "--url", url, "--username", username, "--password", password).Output()
-		check(err)
+		_, err := exec.Command("../main/main", "add", "--vault", vault, "--masterpass",
+			masterPassword, "--url", url, "--username", username, "--password", password).Output()
+
+		url = strings.TrimSpace(url)
+		username = strings.TrimSpace(username)
+		vault = strings.TrimSpace(vault)
+		masterPassword = strings.TrimSpace(masterPassword)
+		password = strings.TrimSpace(password)
+
+		if url != "" && username != "" && vault != "" && password != "" && masterPassword != "" {
+			check(err)
+		}
 	}).
-	AddButton("Quit", func() {
-		app.Stop()
-	})
+		AddButton("Quit", func() {
+			app.Stop()
+		})
 
 	var inputLenForm = tview.NewForm().
 		AddInputField("Lenght", "", 3, nil, nil)
 	inputLenForm.AddButton("Generate", func() {
 		len := getInputFieldText(inputLenForm, 0)
-		_, err := exec.Command("../main/main","generate", "-l", len).Output()
+		_, err := exec.Command("../main/main", "generate", "-l", len).Output()
 		check(err)
 	})
 
@@ -134,41 +168,64 @@ func main() {
 		vault := getInputFieldText(modifyForm, 2)
 		newPassword := getInputFieldText(modifyForm, 4)
 		masterPassword := getInputFieldText(modifyForm, 5)
-		_, err := exec.Command("../main/main","change", "password","--vault", vault, "--masterpass",
-		masterPassword, "--url", url, "--username", username,
-		"--new-password", newPassword).Output()
-		check(err)
+		_, err := exec.Command("../main/main", "change", "password", "--vault", vault, "--masterpass",
+			masterPassword, "--url", url, "--username", username,
+			"--new-password", newPassword).Output()
+
+		masterPassword = strings.TrimSpace(masterPassword)
+		vault = strings.TrimSpace(vault)
+
+		if err != nil {
+			if vault != "" && masterPassword != "" {
+				check(err)
+			}
+		}
 	}).
-	AddButton("Change username", func() {
-		url := getInputFieldText(modifyForm, 0)
-		username := getInputFieldText(modifyForm, 1)
-		vault := getInputFieldText(modifyForm, 2)
-		newUsername := getInputFieldText(modifyForm, 3)
-		masterPassword := getInputFieldText(modifyForm, 5)
-		_, err := exec.Command("../main/main","change", "username","--vault", vault, "--masterpass",
-		masterPassword, "--url", url, "--username", username,
-		"--new-username", newUsername).Output()
-		check(err)
-	}).
-	AddButton("Quit", func() {
-		app.Stop()
-	})
-	
+		AddButton("Change username", func() {
+			url := getInputFieldText(modifyForm, 0)
+			username := getInputFieldText(modifyForm, 1)
+			vault := getInputFieldText(modifyForm, 2)
+			newUsername := getInputFieldText(modifyForm, 3)
+			masterPassword := getInputFieldText(modifyForm, 5)
+			_, err := exec.Command("../main/main", "change", "username", "--vault", vault, "--masterpass",
+				masterPassword, "--url", url, "--username", username,
+				"--new-username", newUsername).Output()
+			username = strings.TrimSpace(username)
+			masterPassword = strings.TrimSpace(masterPassword)
+			vault = strings.TrimSpace(vault)
+			url = strings.TrimSpace(url)
+
+			if err != nil {
+				if username != "" && url != "" && masterPassword != "" && vault != "" {
+					check(err)
+				}
+			}
+		}).
+		AddButton("Quit", func() {
+			app.Stop()
+		})
+
 	var pages = tview.NewPages().
-	AddPage("textView", textView, true, true).
-	AddPage("masterPassForm", masterPassForm, true, false).
-	AddPage("inputLenForm", inputLenForm, true, false).
-	AddPage("cdForm", cdForm, true, false).
-	AddPage("addForm", addForm, true, false).
-	AddPage("modifyForm", modifyForm, true, false).
-	AddPage("createForm", createForm, true, false)
+		AddPage("textView", textView, true, true).
+		AddPage("masterPassForm", masterPassForm, true, false).
+		AddPage("inputLenForm", inputLenForm, true, false).
+		AddPage("cdForm", cdForm, true, false).
+		AddPage("addForm", addForm, true, false).
+		AddPage("modifyForm", modifyForm, true, false).
+		AddPage("createForm", createForm, true, false)
 
 	createForm.AddButton("List", func() {
 		vaultName := getInputFieldText(createForm, 0)
 		masterPass := getInputFieldText(createForm, 1)
-		vaultList, err := exec.Command("../main/main","list", "--vault", vaultName, 
-		"--masterpass", masterPass).Output()
-		check(err)
+		vaultList, err := exec.Command("../main/main", "list", "--vault", vaultName,
+			"--masterpass", masterPass).Output()
+
+		vaultName = strings.TrimSpace(vaultName)
+		masterPass = strings.TrimSpace(masterPass)
+
+		if vaultName != "" && masterPass != "" {
+			check(err)
+		}
 
 		//display vault
 		textView.SetText(string(vaultList))
@@ -177,7 +234,7 @@ func main() {
 
 	var flex = tview.NewFlex()
 	flex.AddItem(list.SetSelectedBackgroundColor(tcell.ColorDarkRed), 0, 3, true).
-	AddItem(pages, 0, 4, true)
+		AddItem(pages, 0, 4, true)
 
 	app.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		//if ENTER is pressed
@@ -201,9 +258,9 @@ func main() {
 			}
 		}
 		return event
-	 })
+	})
 
-    if err := app.SetRoot(flex, true).EnableMouse(true).Run(); err != nil {
-        panic(err)
-    }
+	if err := app.SetRoot(flex, true).EnableMouse(true).Run(); err != nil {
+		panic(err)
+	}
 }
