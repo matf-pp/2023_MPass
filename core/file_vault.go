@@ -181,11 +181,11 @@ func (v *FileVault) UpdateEntryPassword(url string, username string, newPassword
 }
 
 func (v *FileVault) PrintVault() {
-	fmt.Println("\t\tDATABASE: " + v.FilePath)
+	fmt.Println("\t\VAULT: " + v.FilePath)
 	fmt.Println("+++++++++++++++++++++++++++++++++++++++++++++++")
 	for url, usernameMap := range v.entries {
 		for username := range usernameMap {
-			fmt.Printf("+   %s : %-22s		+\n", url, username)
+			fmt.Printf("   %s : %-22s		\n", url, username)
 		}
 	}
 	fmt.Println("+++++++++++++++++++++++++++++++++++++++++++++++")
