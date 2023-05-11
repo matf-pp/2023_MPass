@@ -39,6 +39,34 @@ XSel or XClip\
     ```
 The binaries are created for Linux based operating systems. 
 
+## Troubleshooting 
+
+While trying to compile and run the program, you might run into errors or missing dependencies.
+
+Common errors:
+
+1. Sqlite-gorm error during build 
+
+    ```
+    #0 11.77 # gorm.io/driver/sqlite
+    #0 11.77 /go/pkg/mod/gorm.io/driver/sqlite@v1.5.0/error_translator.go:9:35: undefined: sqlite3.ErrNoExtended
+    #0 11.77 /go/pkg/mod/gorm.io/driver/sqlite@v1.5.0/error_translator.go:14:36: undefined: sqlite3.Error
+    ```
+    To fix this, in terminal run:
+    
+    ```
+    $ cd 2023_MPass/main
+    $ go get gorm.io/driver/sqlite@v1.4.4
+    ```
+2. `Binary was compiled with 'CGO_ENABLED=0', go-sqlite3 requires cgo to work` runtime error*
+    ```
+    $ sudo apt update
+    $ sudo apt install build-essential
+    $ cd 2023_MPass/main
+    $ CGO_ENABLED=1 go build main.go
+    ```
+    *with cgo enabled compile time can take even up to a few minutes
+    
 ## Authors
 Project created by
 Ana Mihajlović ([cholesski](https://github.com/cholesski)) and 
