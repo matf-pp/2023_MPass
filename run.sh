@@ -1,5 +1,6 @@
 #!/bin/bash
 
+mkdir database
 cd main
 go get gorm.io/driver/sqlite@v1.4.4
 go build main.go
