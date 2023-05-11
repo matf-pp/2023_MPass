@@ -2,7 +2,7 @@
 
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/13da5432f0824aa984b9550909697435)](https://app.codacy.com/gh/matf-pp/2023_MPass/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade)
 
-CLI based, simple password manager desktop application for Linux. Provides functionalities such as storing, accessing, adding and modifying sensitive login information. Login entries are stored in an encrypted database. User can create one or multiple databases with unique master passwords, and to gain access to an existing database a correct master password needs to be entered. Encryption was implemented using AES-256 algorithm with GCM, and encryption keys are created using PBKDF2 hashing algorithm.
+CLI based, simple password manager desktop application for Linux. Provides functionalities such as storing, accessing, adding and modifying sensitive login information. Login entries are stored in an encrypted database. User can create one or multiple vaults with unique master passwords, and to gain access to an existing vault a correct master password needs to be entered. Encryption was implemented using AES-256 algorithm with GCM, and encryption keys are created using PBKDF2 hashing algorithm.
 
 Project was written in Go language.
 
@@ -15,24 +15,29 @@ $ sudo snap install go --classic
 XSel or XClip\
 [Installation guide](https://ostechnix.com/access-clipboard-contents-using-xclip-and-xsel-in-linux/)
 ## Installation
-```
-$ git clone https://github.com/matf-pp/2023_MPass.git
-```
-or just download and extract the zip/tar.gz file.
-In terminal type the following commands
- 
-```
-$ cd 2023_MPass
-$ chmod +x run.sh
-$ ./run.sh
-```
-Shell script run.sh creates the binary ./main that is in the 2023_MPass/main directory. To continue using the newly created program:
-```
-$ cd main
-$ ./main 
-```
-
-The binary is created for Linux based operating systems. 
+1. Building your own binaries: 
+    ```
+    $ git clone https://github.com/matf-pp/2023_MPass.git
+    ```
+    or just download and extract the zip/tar.gz file.
+    In terminal type the following commands
+    
+    ```
+    $ cd 2023_MPass
+    $ chmod +x run.sh
+    $ ./run.sh
+    ```
+    Shell script run.sh creates the binaries ./main and ./tui_main that are in the 2023_MPass/main, 2023_MPass/tui directories. To use the CLI version of the program, in terminal run:
+    ```
+    $ cd main
+    $ ./main 
+    ```
+    To use the TUI version:
+    ```
+    $ cd tui
+    $ ./tui_main
+    ```
+The binaries are created for Linux based operating systems. 
 
 ## Authors
 Project created by
