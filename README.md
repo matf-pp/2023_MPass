@@ -2,9 +2,15 @@
 
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/13da5432f0824aa984b9550909697435)](https://app.codacy.com/gh/matf-pp/2023_MPass/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade)
 
-CLI based, simple password manager desktop application for Linux. Provides functionalities such as storing, accessing, adding and modifying sensitive login information. Login entries are stored in an encrypted database. User can create one or multiple vaults with unique master passwords, and to gain access to an existing vault a correct master password needs to be entered. Encryption was implemented using AES-256 algorithm with GCM, and encryption keys are created using PBKDF2 hashing algorithm.
+![ezgif com-crop(1)](https://github.com/matf-pp/2023_MPass/assets/57573974/ac76380a-a698-44c7-9b67-0a35e5552819)
+
+CLI based, simple password manager desktop application for Linux. Provides functionalities such as storing, accessing, adding and modifying sensitive login information. Login entries are stored in an encrypted database. User can create one or multiple vaults with unique master passwords, and to gain access to an existing vault a correct master password needs to be entered. Encryption was implemented using AES-256 algorithm with GCM, and encryption keys are created using PBKDF2 hashing algorithm. 
 
 Project was written in Go language.
+
+![snd](https://github.com/matf-pp/2023_MPass/assets/57573974/56ff42b3-db74-4e36-bbd6-fca6a2d0d2ff)
+![2023-05-11_10-13](https://github.com/matf-pp/2023_MPass/assets/57573974/b0862671-b4e7-4569-9747-9cb24ca8a246)
+
 
 ## Prerequisites
 [Go language](https://go.dev/dl/)
@@ -37,6 +43,18 @@ XSel or XClip\
     $ cd tui
     $ ./tui_main
     ```
+2. Using pre-built binaries: 
+
+    Go to the releases section and download the 2023_MPass-*.zip file. Extract the files and in terminal run:
+     ```
+    $ cd main
+    $ ./main 
+    ```
+    To use the TUI version:
+    ```
+    $ cd tui
+    $ ./tui_main
+    ```
 The binaries are created for Linux based operating systems. 
 
 ## Troubleshooting 
@@ -46,11 +64,12 @@ While trying to compile and run the program, you might run into errors or missin
 Common errors:
 
 1. Sqlite-gorm error during build 
+   
 
     ```
-    #0 11.77 # gorm.io/driver/sqlite
-    #0 11.77 /go/pkg/mod/gorm.io/driver/sqlite@v1.5.0/error_translator.go:9:35: undefined: sqlite3.ErrNoExtended
-    #0 11.77 /go/pkg/mod/gorm.io/driver/sqlite@v1.5.0/error_translator.go:14:36: undefined: sqlite3.Error
+    # gorm.io/driver/sqlite
+    /go/pkg/mod/gorm.io/driver/sqlite@v1.5.0/error_translator.go:9:35: undefined: sqlite3.ErrNoExtended
+    /go/pkg/mod/gorm.io/driver/sqlite@v1.5.0/error_translator.go:14:36: undefined: sqlite3.Error
     ```
     To fix this, in terminal run:
     
