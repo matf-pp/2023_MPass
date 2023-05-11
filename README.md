@@ -8,8 +8,10 @@ CLI based, simple password manager desktop application for Linux. Provides funct
 
 Project was written in Go language.
 
-![snd](https://github.com/matf-pp/2023_MPass/assets/57573974/56ff42b3-db74-4e36-bbd6-fca6a2d0d2ff)
-![2023-05-11_10-13](https://github.com/matf-pp/2023_MPass/assets/57573974/b0862671-b4e7-4569-9747-9cb24ca8a246)
+![snd](https://github.com/matf-pp/2023_MPass/assets/57573974/2ee79217-3031-453c-a0de-4fa370c996f0)
+![2023-05-11_10-13](https://github.com/matf-pp/2023_MPass/assets/57573974/8889ae4f-57d6-43d3-9872-845137d28525)
+
+
 
 
 ## Prerequisites
