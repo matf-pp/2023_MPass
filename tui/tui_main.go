@@ -8,9 +8,10 @@ import (
 	"github.com/rivo/tview"
 )
 
-func check(e error) {
+func check(e error, pages *tview.Pages, errView *tview.TextView) {
 	if e != nil {
-		panic(e)
+		errView.SetText("ERROR !")
+		pages.SwitchToPage("errView")
 	}
 }
 
@@ -40,12 +41,9 @@ func main() {
 
 	var pages = tview.NewPages().
 	AddPage("textView", textView, true, true)
-	// AddPage("masterPassForm", masterPassForm, true, false).
-	// AddPage("inputLenForm", inputLenForm, true, false).
-	// AddPage("cdForm", cdForm, true, false).
-	// AddPage("addForm", addForm, true, false).
-	// AddPage("modifyForm", modifyForm, true, false).
-	// AddPage("createForm", createForm, true, false)
+
+	var errView = tview.NewTextView().SetTextColor(tcell.ColorDarkRed).SetTextAlign(tview.AlignCenter)
+	pages.AddPage("errView", errView, true, false)
 
 	var masterPassForm = tview.NewForm().
 		AddInputField("Vault name", "", 20, nil, nil).
@@ -61,7 +59,7 @@ func main() {
 		oldMasterPass = strings.TrimSpace(oldMasterPass)
 		newMasterPass = strings.TrimSpace(newMasterPass)
 		if vault != "" && oldMasterPass != "" && newMasterPass != "" {
-			check(err)
+			check(err, pages, errView)
 		}
 	}).
 		AddButton("Quit", func() {
@@ -81,7 +79,7 @@ func main() {
 		vault = strings.TrimSpace(vault)
 		masterPass = strings.TrimSpace(masterPass)
 		if vault != "" && masterPass != "" {
-			check(err)
+			check(err, pages, errView)
 		}
 	}).
 		AddButton("Quit", func() {
@@ -108,7 +106,7 @@ func main() {
 		masterPass = strings.TrimSpace(masterPass)
 
 		if url != "" && username != "" && vault != "" && masterPass != "" {
-			check(err)
+			check(err, pages, errView)
 		}
 
 		textView.SetText(string(out))
@@ -128,7 +126,7 @@ func main() {
 			masterPass = strings.TrimSpace(masterPass)
 
 			if url != "" && username != "" && vault != "" && masterPass != "" {
-				check(err)
+				check(err, pages, errView)
 			}
 		}).
 		AddButton("Quit", func() {
@@ -159,7 +157,7 @@ func main() {
 		password = strings.TrimSpace(password)
 
 		if url != "" && username != "" && vault != "" && password != "" && masterPassword != "" {
-			check(err)
+			check(err, pages, errView)
 		}
 	}).
 		AddButton("Quit", func() {
@@ -173,7 +171,7 @@ func main() {
 	inputLenForm.AddButton("Generate", func() {
 		len := getInputFieldText(inputLenForm, 0)
 		out, err := exec.Command("../main/main", "generate", "-l", len).Output()
-		check(err)
+		check(err, pages, errView)
 
 		textView.SetText(string(out))
 		pages.SwitchToPage("textView")
@@ -203,7 +201,7 @@ func main() {
 
 		if err != nil {
 			if vault != "" && masterPassword != "" {
-				check(err)
+				check(err, pages, errView)
 			}
 		}
 	}).
@@ -223,7 +221,7 @@ func main() {
 
 			if err != nil {
 				if username != "" && url != "" && masterPassword != "" && vault != "" {
-					check(err)
+					check(err, pages, errView)
 				}
 			}
 		}).
@@ -243,7 +241,7 @@ func main() {
 		masterPass = strings.TrimSpace(masterPass)
 
 		if vaultName != "" && masterPass != "" {
-			check(err)
+			check(err, pages, errView)
 		}
 
 		//display vault
