@@ -38,6 +38,15 @@ func main() {
 
 	var textView = tview.NewTextView().SetTextColor(tcell.ColorWhiteSmoke).SetTextAlign(tview.AlignCenter)
 
+	var pages = tview.NewPages().
+	AddPage("textView", textView, true, true)
+	// AddPage("masterPassForm", masterPassForm, true, false).
+	// AddPage("inputLenForm", inputLenForm, true, false).
+	// AddPage("cdForm", cdForm, true, false).
+	// AddPage("addForm", addForm, true, false).
+	// AddPage("modifyForm", modifyForm, true, false).
+	// AddPage("createForm", createForm, true, false)
+
 	var masterPassForm = tview.NewForm().
 		AddInputField("Vault name", "", 20, nil, nil).
 		AddPasswordField("Old masterpass", "", 20, '*', nil).
@@ -59,6 +68,8 @@ func main() {
 			app.Stop()
 		})
 
+	pages.AddPage("masterPassForm", masterPassForm, true, false)
+
 	var createForm = tview.NewForm().
 		AddInputField("Vault name", "", 20, nil, nil).
 		AddPasswordField("Masterpass", "", 20, '*', nil)
@@ -77,6 +88,8 @@ func main() {
 			app.Stop()
 		})
 
+	pages.AddPage("createForm", createForm, true, false)
+
 	var cdForm = tview.NewForm().
 		AddInputField("Url", "", 20, nil, nil).
 		AddInputField("Username", "", 20, nil, nil).
@@ -87,7 +100,7 @@ func main() {
 		username := getInputFieldText(cdForm, 1)
 		vault := getInputFieldText(cdForm, 2)
 		masterPass := getInputFieldText(cdForm, 3)
-		_, err := exec.Command("../main/main", "copy", "--vault", vault,
+		out, err := exec.Command("../main/main", "copy", "--vault", vault,
 			"--masterpass", masterPass, "--url", url, "--username", username).Output()
 		url = strings.TrimSpace(url)
 		username = strings.TrimSpace(username)
@@ -97,6 +110,10 @@ func main() {
 		if url != "" && username != "" && vault != "" && masterPass != "" {
 			check(err)
 		}
+
+		textView.SetText(string(out))
+		pages.SwitchToPage("textView")
+
 	}).
 		AddButton("Delete", func() {
 			url := getInputFieldText(cdForm, 0)
@@ -117,6 +134,8 @@ func main() {
 		AddButton("Quit", func() {
 			app.Stop()
 		})
+
+	pages.AddPage("cdForm", cdForm, true, false)
 
 	var addForm = tview.NewForm().
 		AddInputField("Url", "", 20, nil, nil).
@@ -146,14 +165,21 @@ func main() {
 		AddButton("Quit", func() {
 			app.Stop()
 		})
+	
+	pages.AddPage("addForm", addForm, true, false)
 
 	var inputLenForm = tview.NewForm().
 		AddInputField("Lenght", "", 3, nil, nil)
 	inputLenForm.AddButton("Generate", func() {
 		len := getInputFieldText(inputLenForm, 0)
-		_, err := exec.Command("../main/main", "generate", "-l", len).Output()
+		out, err := exec.Command("../main/main", "generate", "-l", len).Output()
 		check(err)
+
+		textView.SetText(string(out))
+		pages.SwitchToPage("textView")
 	})
+
+	pages.AddPage("inputLenForm", inputLenForm, true, false)
 
 	var modifyForm = tview.NewForm().
 		AddInputField("Url", "", 20, nil, nil).
@@ -205,14 +231,7 @@ func main() {
 			app.Stop()
 		})
 
-	var pages = tview.NewPages().
-		AddPage("textView", textView, true, true).
-		AddPage("masterPassForm", masterPassForm, true, false).
-		AddPage("inputLenForm", inputLenForm, true, false).
-		AddPage("cdForm", cdForm, true, false).
-		AddPage("addForm", addForm, true, false).
-		AddPage("modifyForm", modifyForm, true, false).
-		AddPage("createForm", createForm, true, false)
+	pages.AddPage("modifyForm", modifyForm, true, false)
 
 	createForm.AddButton("List", func() {
 		vaultName := getInputFieldText(createForm, 0)
@@ -231,6 +250,8 @@ func main() {
 		textView.SetText(string(vaultList))
 		pages.SwitchToPage("textView")
 	})
+
+	pages.AddPage("createForm", createForm, true, false)
 
 	var flex = tview.NewFlex()
 	flex.AddItem(list.SetSelectedBackgroundColor(tcell.ColorDarkRed), 0, 3, true).

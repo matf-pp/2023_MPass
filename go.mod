@@ -29,7 +29,7 @@ require (
 	github.com/mattn/go-sqlite3 v1.14.16 // indirect
 	github.com/remyoudompheng/bigfft v0.0.0-20230129092748-24d4a6f8daec // indirect
 	golang.org/x/sys v0.8.0 // indirect
-	gorm.io/driver/sqlite v1.5.0 // indirect
+	gorm.io/driver/sqlite v1.4.4 // indirect
 	gorm.io/gorm v1.25.0 // indirect
 	modernc.org/libc v1.22.3 // indirect
 	modernc.org/mathutil v1.5.0 // indirect
