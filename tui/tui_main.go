@@ -167,7 +167,7 @@ func main() {
 	pages.AddPage("addForm", addForm, true, false)
 
 	var inputLenForm = tview.NewForm().
-		AddInputField("Lenght", "", 3, nil, nil)
+		AddInputField("Length", "", 3, nil, nil)
 	inputLenForm.AddButton("Generate", func() {
 		len := getInputFieldText(inputLenForm, 0)
 		out, err := exec.Command("../main/main", "generate", "-l", len).Output()
